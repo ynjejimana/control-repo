@@ -1,0 +1,29 @@
+---
+# tasks file for spacewal
+#
+- name: set activation key for 6
+  set_fact:
+    satellite_activationkey: "{{ satellite_activationkey_6 }}"
+  when: ansible_distribution_major_version == "6"
+- name: set activation key for 7
+  set_fact:
+    satellite_activationkey: "{{ satellite_activationkey_7 }}"
+  when: ansible_distribution_major_version == "7"
+- name: add Satellite proxy servers hosts entry
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ item }}"
+  with_items:
+    - "{{ hosts_file }}"
+- name: check for Satellite server SSL certificate
+  stat: path="{{ spacewalk_ssl_path }}"
+  register: ssl_file
+- name: install Satellite SSL rpm
+  shell: rpm -ivh http://{{ satellite_proxy }}/pub/{{ satellite_ssl_package }}
+  when: ssl_file.stat.exists == false
+- name: register with Satellite
+  shell: rhnreg_ks --serverUrl=https://{{ satellite_proxy }}/XMLRPC --sslCACert={{ satellite_ssl_path }} --activationkey={{ satellite_activationkey }} --force && touch /etc/sysconfig/rhn/system_registered
+  args:
+    creates: /etc/sysconfig/rhn/system_registered
+- name: enable rhnsd service
+  service: name=rhnsd state=started enabled=true
