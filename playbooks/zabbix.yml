@@ -1,0 +1,110 @@
+---
+- name: Ensure zabbix agent is installed
+  yum:
+    name: zabbix-agent
+    state: present
+  tags: zabbix
+
+- name: Update Zabbix Agent config
+  lineinfile:
+    dest: /etc/zabbix/zabbix_agentd.conf
+    regexp: '^Server='
+    line: 'Server={{ zabbix_servers }}'
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+  tags: zabbix
+  notify: restart zabbix-agent
+
+- name: chkconfig set
+  service:
+    name: zabbix-agent
+    state: started 
+    enabled: yes
+  tags: zabbix
+
+- name: Ansible Managed
+  lineinfile:
+   dest: /etc/zabbix/zabbix_agentd.conf
+   insertbefore: BOF
+   line: '#Ansible Managed'
+   state: present
+  tags: zabbix
+
+- name: Create dir for customer OVM monitoring
+  file:
+    path: /srv/zabbix/scripts/ovmmonitoring
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  tags: zabbix
+
+- name: Copy custom XEN monitoing script
+  copy:
+    src: ../files/xenmonv2.py
+    dest: /srv/zabbix/scripts/ovmmonitoring/xenmonv2.py
+    owner: zabbix
+    group: zabbix
+    mode: 0755
+  tags: zabbix
+
+- name: SUDO for zabbix
+  copy:
+    src: ../files/20_zabbix
+    dest: /etc/sudoers.d/20_zabbix
+    owner: root
+    group: root
+    mode: 0440
+  tags: zabbix
+
+- name: Update Zabbix user
+  user:
+   name: zabbix
+   state: present
+   shell: /bin/bash
+   non_unique: no
+  tags: zabbix
+
+- name: Ensure zabbix home dir is present
+  file:
+    path: /var/lib/zabbix
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: 0755
+  tags: zabbix
+
+- name: Ensure zabbix .ssh dir is present
+  file:
+    path: /var/lib/zabbix/.ssh
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: 0700
+  when: zabbix_key_ovm is defined
+  tags: zabbix
+
+- name: Ensure zabbix authorized_keys file is present
+  file:
+    path: /var/lib/zabbix/.ssh/authorized_keys
+    state: touch
+    access_time: preserve
+    modification_time: preserve
+    owner: zabbix
+    group: zabbix
+    mode: 0600
+  when: zabbix_key_ovm is defined
+  tags: zabbix
+
+- name: Add zabbix public key
+  lineinfile:
+    path: /var/lib/zabbix/.ssh/authorized_keys
+    line: "{{ zabbix_key_ovm }}"
+    state: present
+    owner: zabbix
+    group: zabbix
+    mode: 0600
+  when: zabbix_key_ovm is defined
+  tags: zabbix

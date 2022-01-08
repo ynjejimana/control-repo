@@ -1,0 +1,37 @@
+# tasks file for filesystem
+- name: Get Partition Info
+  parted:
+    device: /dev/sda
+    unit: GB
+  register: sda_info
+  
+- name: Create New Partition for extending Root
+  parted:
+    device: /dev/sda
+    number: "{{ sda_info.partitions.1.num + 1 }}"
+    part_start: "{{ sda_info.partitions.1.end }}GB"
+    flags: [ lvm ]
+    state: present
+  ignore_errors: true
+
+- name: Run Partx for Rhel and CentOS 6
+  command: partx -v -a /dev/sda
+  when:
+   ansible_distribution_major_version == "6"
+ 
+- name: add new partition to pvs
+  command: pvcreate /dev/sda3
+
+- name: add new space to logical volume
+  lvg:
+    vg: vg_root
+    pvs: /dev/sda2,/dev/sda3
+
+- name: extend LVS to free pvs
+  lvol:
+    vg: vg_root
+    lv: lv_root
+    size: +100%FREE
+
+- name: Resize disk
+  command: resize2fs /dev/mapper/vg_root-lv_root

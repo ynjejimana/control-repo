@@ -1,0 +1,23 @@
+---
+- name: Static IP routes - persistent
+  lineinfile:
+    path: "/etc/sysconfig/network-scripts/route-{{ item.dev }}"
+    line: "{{ item.dest }} via {{ item.src }} dev {{ item.dev }}"
+    state: present
+    create: yes
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  loop: "{{ static_iproute }}"
+  become: yes
+  when: static_iproute is defined
+  tags: iproute
+
+- name: Static IP routes - IMMEDIATE
+  command: ip route replace {{ item.dest }} via {{ item.src }} dev {{ item.dev }}
+  loop: "{{ static_iproute }}"
+  become: yes
+  ignore_errors: True
+  when: static_iproute is defined
+  tags: iproute

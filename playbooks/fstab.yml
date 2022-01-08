@@ -1,0 +1,35 @@
+---
+- hosts: all
+  tasks:
+   - name: Create Mountpoints on filesystem
+     file:
+       path: "{{ item.path }}"
+       state: directory
+       owner: oracle
+       group: oinstall
+       mode: 0775
+     with_items: "{{ mount_vars }}"
+     become: yes
+     when: ansible_hostname not in groups.elab_x7_compute
+     tags: fstab
+
+   - name: Backup Mounts
+     mount:
+      src: "{{ item.src }}"
+      path: "{{ item.path }}" 
+      state: mounted
+      opts: "{{ item.opts }}"
+      fstype: nfs
+     with_items: "{{ mount_vars }}"
+     become: yes
+     when: ansible_hostname not in groups.elab_x7_compute
+     tags: fstab
+
+   - name: Ansible Managed
+     lineinfile: 
+        path: /etc/fstab
+        state: present
+        insertbefore: BOF
+        line: '# Ansible Managed'
+     become: yes
+     tags: fstab 

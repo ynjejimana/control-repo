@@ -1,0 +1,39 @@
+---
+- name: Update nfsmount.conf
+  lineinfile:
+    path: /etc/nfsmount.conf
+    regexp: "^{{ item }}"
+    insertafter: "^# {{ item }}"
+    line: "{{ item }}={{ nfsclientvers }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  loop: "{{ nfsclient_options }}"
+  notify: restart nfs
+  when: nfsclient_options is defined
+  tags:
+    - nfsclient
+
+- name: Update /etc/sysconfig/nfs
+  lineinfile:
+    path: /etc/sysconfig/nfs
+    regexp: "^{{ item }}"
+    insertafter: "^#{{ item }}"
+    line: '{{ item }}="yes"'
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  loop: "{{ nfs_syscon }}"
+  notify: restart nfs
+  when: nfsclient_options is defined
+  tags:
+    - nfsclient
+
+
+
+
+
+
+       #MOUNTD_NFS_V3="no"
