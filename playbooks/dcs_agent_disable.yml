@@ -1,0 +1,45 @@
+---
+
+- name: Disable IPS Protection
+  shell: "/opt/Symantec/sdcssagent/IPS/bin/sisipsconfigtool -ipsstate off"
+  register: ips_off
+  become_user: sisips
+  tags:
+    - dcs_agent_remove
+    - dcs_remove
+    - njeji
+    - njeji_pre
+    - pre_patch_checks
+    - patch_full_process
+    - reboot
+
+- name: Stop and disable the Symantec IPS Agent
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  when: ips_off is changed
+  loop:
+    - 'sisidsagent'
+    - 'sisipsagent'
+  tags:
+    - dcs_agent_remove
+    - dcs_remove
+    - njeji
+    - njeji_pre
+    - pre_patch_checks
+    - patch_full_process
+    - reboot
+
+- name: Remove DCS agent
+  yum:
+    name: SYMCsdcss
+    state: absent
+  tags:
+    - dcs_agent_remove
+    - dcs_remove
+    - njeji
+    - njeji_pre
+    - pre_patch_checks
+    - patch_full_process
+    - reboot

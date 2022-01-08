@@ -1,0 +1,30 @@
+---
+- name: Install python-pycurl and python-apt for Debian OS family
+  apt: pkg={{ item.package }} 
+       update_cache=yes 
+       cache_valid_time=30
+       state=present
+  with_items: sysdig_aptutils
+
+- name: Get Sysdig Key for Debian OS family
+  apt_key: url={{ sysdig_repokey }} 
+           state=present
+
+- name: Get Sysdig repo for Debian OS family
+  get_url: url={{ sysdig_url_apt }} 
+           dest={{ sysdig_repo_apt }} 
+           owner=root 
+           group=root 
+           mode=0644
+
+- name: Install Linux Headers for Debian OS family
+  apt: pkg=linux-headers-{{ ansible_kernel }} 
+       update_cache=yes 
+       cache_valid_time=30
+       state=latest
+
+- name: Install Sysdig for Debian OS family
+  apt: pkg={{ sysdig_package }} 
+       update_cache=yes 
+       cache_valid_time=30
+       state=latest

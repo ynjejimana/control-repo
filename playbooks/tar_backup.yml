@@ -1,0 +1,4 @@
+- name: Backup {{ item.value }} via tar to /njejibackupszs5/{{ ansible_hostname }}_{{item.key}}.tar.gz
+  command: "/bin/tar -czf /njejibackups/{{ ansible_hostname }}_{{item.key}}.tar.gz {{item.value}}"
+  tags: tar_backup
+  with_dict: "{{ app_data }}"

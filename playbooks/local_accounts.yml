@@ -1,0 +1,13 @@
+- name: Set login.defs to usergroups_enab no
+  shell: sed -i.bak "s/USERGROUPS_ENAB yes/USERGROUPS_ENAB no/" /etc/login.defs
+  tags: remove_accounts
+- name: Remove local accounts
+  user: name={{ item }} state=absent force=yes
+  with_items:
+       - njejimyv
+       - user1
+       - user2
+  tags: remove_accounts
+- name: Reset logindefs back to yes
+  shell: sed -i "s/USERGROUPS_ENAB no/USERGROUPS_ENAB yes/" /etc/login.defs 
+  tags: remove_accounts

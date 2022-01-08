@@ -1,0 +1,28 @@
+# Backing up relevant parts of Graylog
+
+- name: Create backup directory
+  file:
+    path: /opt/backup
+    state: directory
+    owner: root
+    group: mongodb
+    mode: 0770
+  tags: graylog-backup
+
+- name: Create MongoDB backup script
+  template:
+    src: templates/backupmongo.sh.j2
+    dest: /usr/local/bin/backupmongo.sh
+    owner: root
+    group: mongodb
+    mode: 0750
+  tags: graylog-backup
+
+- name: Cron MongoDB backup script
+  cron:
+    name: "MongoDB Backup"
+    minute: "35"
+    hour: "12"
+    user: "mongodb"
+    job: "/usr/local/bin/backupmongo.sh"
+  tags: graylog-backup

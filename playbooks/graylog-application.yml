@@ -1,0 +1,252 @@
+# Configure Graylog application via the REST API
+# Start with no inputs configured, as inputs are added here
+- name: Configure LDAP settings
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/ldap/settings
+      method: PUT
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          enabled: true
+          system_username: uid={{ graylog_svc_account_username }},cn=users,cn=accounts,dc=esbu,dc=lab,dc=com,dc=au
+          system_password: "{{ graylog_svc_account_password }}"
+          ldap_uri: ldap://{{ location_shortname }}fipa01.lab.com:389
+          use_start_tls: true
+          search_base: dc=lab,dc=com
+          search_pattern: (&(objectClass=inetOrgPerson)(uid={0}))
+          display_name_attribute: cn
+          default_group: Reader
+          group_search_base: cn=groups,cn=accounts,dc=lab,dc=com
+          group_id_attribute: cn
+          group_search_pattern: (&(objectClass=groupofnames)(cn=graylog_*))
+      status_code: 204
+  tags:
+      - graylog-app
+      - ldap
+
+- name: Add Baseline Reader role
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/roles
+      method: POST
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          name: Baseline Reader
+          description: Users assigned to this role can read all messages on this Graylog cluster
+          permissions:
+              - streams:read:000000000000000000000001
+          read_only: false
+      status_code: 201
+  tags:
+      - graylog-app
+      - ldap
+
+- name: Apply LDAP group mappings
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/ldap/settings/groups
+      method: PUT
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          graylog_admin: Admin
+          graylog_reader_baseline: Baseline Reader
+      status_code: 204
+  tags:
+      - graylog-app
+      - ldap
+
+- name: Configure GELF TCP input
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/inputs
+      method: POST
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          title: GELF TCP 12201
+          type: "org.graylog2.inputs.gelf.tcp.GELFTCPInput"
+          global: true
+          configuration:
+              recv_buffer_size: 1048576
+              tcp_keepalive: true
+              use_null_delimiter: true
+              tls_client_auth_cert_file: ""
+              bind_address: "0.0.0.0"
+              tls_cert_file: ""
+              decompress_size_limit: 8388608
+              port: 12201
+              tls_key_file: ""
+              tls_enable: false
+              tls_key_password: ""
+              max_message_size: 2097152
+              tls_client_auth: disabled
+              override_source: null
+      status_code: 201
+  tags:
+      - graylog-app
+      - input
+
+- name: Configure Beats input
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/inputs
+      method: POST
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          title: Beats
+          type: "org.graylog.plugins.beats.BeatsInput"
+          global: true
+          configuration:
+              recv_buffer_size: 1048576
+              port: 5044
+              tcp_keepalive: true
+              bind_address: "0.0.0.0"
+              tls_enable: true
+              tls_key_file: "/etc/pki/tls/private/beats-ca.key.pem"
+              tls_key_password: ""
+              tls_client_auth_cert_file: ""
+              tls_client_auth: disabled
+              tls_cert_file: "/etc/pki/tls/certs/beats-ca.cert.pem"
+              override_source: ""
+      status_code: 201
+  tags:
+      - graylog-app
+      - input
+
+- name: Configure Syslog TCP 5140 input
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/inputs
+      method: POST
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          title: Syslog TCP 5140
+          type: "org.graylog2.inputs.syslog.tcp.SyslogTCPInput"
+          global: true
+          configuration:
+              allow_override_date: true
+              bind_address: "0.0.0.0"
+              expand_structured_data: false
+              force_rdns: false
+              max_message_size: 2097152
+              override_source: ""
+              port: 5140
+              recv_buffer_size: 1048576
+              store_full_message: false
+              tcp_keepalive: true
+              tls_cert_file: ""
+              tls_client_auth: disabled
+              tls_client_auth_cert_file: ""
+              tls_enable: false
+              tls_key_file: ""
+              tls_key_password: ""
+              use_null_delimiter: false
+      status_code: 201
+  tags:
+      - graylog-app
+      - input
+
+- name: Configure Syslog UDP 5140 input
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/inputs
+      method: POST
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          title: Syslog UDP 5140
+          type: "org.graylog2.inputs.syslog.udp.SyslogUDPInput"
+          global: true
+          configuration:
+              allow_override_date: true
+              bind_address: "0.0.0.0"
+              expand_structured_data: false
+              force_rdns: false
+              override_source: ""
+              port: 5140
+              recv_buffer_size: 1048576
+              store_full_message: false
+      status_code: 201
+  tags:
+      - graylog-app
+      - input
+
+- name: Configure Syslog UDP 5141 input
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/inputs
+      method: POST
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          title: Syslog UDP 5141
+          type: "org.graylog2.inputs.syslog.udp.SyslogUDPInput"
+          global: true
+          configuration:
+              allow_override_date: true
+              bind_address: "0.0.0.0"
+              expand_structured_data: false
+              force_rdns: false
+              override_source: ""
+              port: 5141
+              recv_buffer_size: 1048576
+              store_full_message: false
+      status_code: 201
+  tags:
+      - graylog-app
+      - input
+
+- name: Get default index set so we can modify it using its ID
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/indices/index_sets?skip=0&limit=0&stats=false
+      method: GET
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      status_code: 200
+  register: all_index_sets
+  tags:
+      - graylog-app
+      - index-set
+
+- name: Change settings on default index set
+  uri:
+      url: http://{{ ansible_fqdn }}:9000/api/system/indices/index_sets/{{ all_index_sets.json.index_sets[0].id }}
+      method: PUT
+      user: admin
+      password: "{{ graylog_root_password }}"
+      validate_certs: no
+      body_format: json
+      body:
+          title: Default index set
+          description: "The Graylog default index set"
+          writable: true
+          shards: 3
+          replicas: 2
+          rotation_strategy_class: "org.graylog2.indexer.rotation.strategies.TimeBasedRotationStrategy"
+          rotation_strategy:
+              type: "org.graylog2.indexer.rotation.strategies.TimeBasedRotationStrategyConfig"
+              rotation_period: P1D
+          retention_strategy_class: "org.graylog2.indexer.retention.strategies.DeletionRetentionStrategy"
+          retention_strategy:
+              type: "org.graylog2.indexer.retention.strategies.DeletionRetentionStrategyConfig"
+              max_number_of_indices: 30
+          index_optimization_max_num_segments: 1
+          index_optimization_disabled: false
+      status_code: 200
+  tags:
+      - graylog-app
+      - index-set

@@ -1,0 +1,93 @@
+# Prepare new Elasticsearch servers for use
+- hosts: sundryhosts
+
+  tasks:
+  - name: Stop ntpd
+    systemd:
+      name: ntpd
+      state: stopped
+    tags: prepare
+
+  - name: Run ntpdate
+    shell: "ntpdate 192.168.56.10"
+    tags: prepare
+
+  - name: Start ntpd
+    systemd:
+      name: ntpd
+      state: started
+    tags: prepare
+
+  - name: Stop and disable puppet
+    systemd:
+      enabled: no
+      name: puppet
+      state: stopped
+    tags: prepare
+
+  - name: Uninstall undesired packages
+    yum:
+        state: absent
+        name: "{{ item }}"
+    with_items:
+        - NetworkManager
+        - NetworkManager-libnm
+        - NetworkManager-wifi
+        - NetworkManager-team
+        - NetworkManager-tui
+    tags: prepare
+  
+  - name: Remove local repos
+    shell: rm -f /etc/yum.repos.d/*.repo
+    tags: prepare
+  
+  - name: Update all packages
+    yum:
+        name: '*'
+        state: latest
+    tags: prepare
+  
+  - name: Remove local repos
+    shell: rm -f /etc/yum.repos.d/*.repo
+    tags: prepare
+  
+  - name: Create disk partition for elasticsearch data directory
+    parted:
+        name: "elastic"
+        device: "/dev/sdb"
+        number: 1
+        label: gpt
+        flags: [ lvm ]
+        state: present
+    tags: prepare
+  
+  - name: Create LVM volume group for elasticsearch
+    lvg:
+        vg: "vg_elastic"
+        pvs: "/dev/sdb1"
+    tags: prepare
+  
+  - name: Create LVM logical volume for elasticsearch data directory
+    lvol:
+        lv: "lv_elastic"
+        vg: "vg_elastic"
+        size: +100%FREE
+    tags: prepare
+  
+  - name: Create ext4 filesystem on elasticsearch logical volume
+    filesystem:
+        fstype: ext4
+        dev: "/dev/mapper/vg_elastic-lv_elastic"
+    tags: prepare
+  
+  - name: Create fstab entry for elasticsearch logical volume
+    mount:
+        fstype: ext4
+        path: "/usr/share/elasticsearch/data/es-01"
+        src: "/dev/mapper/vg_elastic-lv_elastic"
+        state: mounted
+    tags: prepare
+  
+  - name: Set FS options for elasticsearch logical volume
+    shell: "tune2fs -c 0 -i 0 -r 0 /dev/mapper/vg_elastic-lv_elastic"
+    tags: prepare

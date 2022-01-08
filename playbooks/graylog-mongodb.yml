@@ -1,0 +1,155 @@
+# Install and configure mongodb for graylog
+- name: Install required packages
+  yum:
+      state: present
+      name: "{{ item }}"
+      disable_gpg_check: yes
+  with_items:
+      - mongodb-server
+      - mongodb
+  tags: mongodb
+
+- name: Start mongod service on 01 node
+  systemd:
+      name: mongod
+      state: started
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Copy mongodb admin user creation script to 01 node
+  template:
+      src: templates/mongod-admin-user-create.js.j2
+      dest: /tmp/mongod-admin-user-create.js
+      owner: root
+      group: root
+      mode: 0400
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Run mongodb admin user creation script on 01 node
+  shell: mongo localhost:27017/admin /tmp/mongod-admin-user-create.js
+  when: "'01' in inventory_hostname"
+  ignore_errors: yes
+  tags: mongodb
+
+- name: Stop mongod service on 01 node
+  systemd:
+      name: mongod
+      state: stopped
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Create mongodb keyfile on 01 node
+  shell: openssl rand -base64 741 > /etc/mongodb-graylog-key
+  args:
+      creates: /etc/mongodb-graylog-key
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Fetch mongodb keyfile from 01 node
+  fetch:
+      src: /etc/mongodb-graylog-key
+      dest: /tmp/
+      flat: yes
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Copy mongodb keyfile to all nodes except 01 node
+  copy:
+      src: /tmp/mongodb-graylog-key
+      dest: /etc/mongodb-graylog-key
+      owner: mongodb
+      group: root
+      mode: 0400
+  when: "'01' not in inventory_hostname"
+  tags: mongodb
+
+- name: Set ownership and permissions of mongodb keyfile
+  file:
+      path: /etc/mongodb-graylog-key
+      owner: mongodb
+      group: root
+      mode: 0400
+  tags: mongodb
+
+- name: Create mongodb config file
+  copy:
+      src: files/graylog-mongod.conf
+      dest: /etc/mongod.conf
+      owner: root
+      group: root
+      mode: 0644
+  tags: mongodb
+
+- name: Start and enable mongod service
+  systemd:
+      enabled: yes
+      name: mongod
+      state: started
+  tags: mongodb
+
+- name: Copy mongodb replicaset initiate script to 01 node
+  template:
+      src: templates/mongod-rs-initiate.js.j2
+      dest: /tmp/mongod-rs-initiate.js
+      owner: root
+      group: root
+      mode: 0400
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Run mongodb replicaset initiate script on 01 node
+  shell: mongo localhost:27017/admin /tmp/mongod-rs-initiate.js
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Pause for 30 seconds to wait for replicaset to initialise
+  pause:
+      seconds: 30
+  tags: mongodb
+
+- name: Copy mongodb replicaset addition script to 01 node
+  template:
+      src: templates/mongod-rs-addition.js.j2
+      dest: /tmp/mongod-rs-addition.js
+      owner: root
+      group: root
+      mode: 0400
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Run mongodb replicaset addition script on 01 node
+  shell: mongo localhost:27017/admin /tmp/mongod-rs-addition.js
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Pause for 60 seconds to wait for replicaset addition of other nodes to complete
+  pause:
+      seconds: 60
+  tags: mongodb
+
+- name: Copy mongodb graylog user and database creation script to 01 node
+  template:
+      src: templates/mongod-rs-add-graylog-user-db-create.js.j2
+      dest: /tmp/mongod-rs-add-graylog-user-db-create.js
+      owner: root
+      group: root
+      mode: 0400
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Run mongodb graylog user and database creation script on 01 node
+  shell: mongo localhost:27017/admin /tmp/mongod-rs-add-graylog-user-db-create.js
+  when: "'01' in inventory_hostname"
+  tags: mongodb
+
+- name: Delete temporary files
+  file:
+      path: "{{ item }}"
+      state: absent
+  with_items:
+      - /tmp/mongod-admin-user-create.js
+      - /tmp/mongod-rs-initiate.js
+      - /tmp/mongod-rs-add-graylog-user-db-create.js
+  when: "'01' in inventory_hostname"
+  tags: mongodb

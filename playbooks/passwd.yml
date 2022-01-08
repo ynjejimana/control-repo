@@ -1,0 +1,6 @@
+- name: Fetch copy of the current passwd
+  fetch: src=/etc/passwd dest=~/.ansible
+  tags: fetch_passwd
+- name: Fetch copy of shadow
+  fetch: src=/etc/shadow dest=~/.ansible  
+  tags: fetch_shadow

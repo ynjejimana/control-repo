@@ -1,0 +1,18 @@
+---
+- name:  List RHN channels
+  shell: "/usr/bin/yum repolist"
+  register: result
+- debug: var=result.stdout_lines
+- name:  MD5SUM Cert
+  shell: "/usr/bin/md5sum /usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT"
+  register: result
+- debug: var=result.stdout_lines
+- name: Copy RHN-ORG-TRUSTED-SSL-CERT to client host
+  copy:  src='/etc/ansible/RHN-ORG-TRUSTED-SSL-CERT' dest='/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT' owner=root group=root mode=644 backup=yes
+  tags: copy_cert_to_server
+- name: "Yum clean all makecache"
+  shell: "/usr/bin/yum clean all && /usr/bin/yum makecache"
+  tags: yum_makeclean
+- name: Curl cert
+  shell: "/usr/bin/curl http://master.lab.com/pub/RHN-ORG-TRUSTED-SSL-CERT -o /usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT"
+  tags: curl_cert 

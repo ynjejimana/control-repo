@@ -1,0 +1,16 @@
+---
+#remote-user: mwilmott
+#- include: goss.yml
+#- include: reboot.yml
+#- include: puppet.yml
+#- include: ipa.yml
+#- include: mount.yml
+#- include: passwd.yml
+#- include: satellite.yml
+#- include: spacewalk.yml
+#- include: ntp.yml
+#- include: sssd.yml
+#- include: kernel.yml
+#- include: uptime.yml
+#- include: force_fsck.yml
+- include: tar_backup.yml

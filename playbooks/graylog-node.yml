@@ -1,0 +1,329 @@
+# Builds a node for a graylog cluster, without elasticsearch
+- name: Stop and disable puppet service
+  systemd:
+      enabled: no
+      name: puppet
+      state: stopped
+  tags: node
+
+- name: Uninstall undesired packages
+  yum:
+      state: absent
+      name: "{{ item }}"
+  with_items:
+      - NetworkManager
+      - NetworkManager-libnm
+      - NetworkManager-wifi
+      - NetworkManager-team
+      - NetworkManager-tui
+  tags: node
+
+- name: Remove local repos
+  shell: rm -f /etc/yum.repos.d/*.repo
+  tags: node
+
+- name: Update all packages
+  yum:
+      name: '*'
+      state: latest
+  tags: node
+
+- name: Remove local repos
+  shell: rm -f /etc/yum.repos.d/*.repo
+  tags: node
+
+- name: Create disk partition for graylog journal directory
+  parted:
+      device: /dev/sdb
+      number: 1
+      flags: [ lvm ]
+      state: present
+  tags: node
+
+- name: Create LVM volume group for graylog
+  lvg:
+      vg: vg_graylog
+      pvs: /dev/sdb1
+  tags: node
+
+- name: Create LVM logical volume for graylog journal directory
+  lvol:
+      lv: lv_gljournal
+      vg: vg_graylog
+      size: +100%FREE
+  tags: node
+
+- name: Create ext4 filesystem on graylog logical volume
+  filesystem:
+      fstype: ext4
+      dev: /dev/mapper/vg_graylog-lv_gljournal
+  tags: node
+
+- name: Create fstab entry for graylog logical volume
+  mount:
+      fstype: ext4
+      path: /var/lib/graylog-server
+      src: /dev/mapper/vg_graylog-lv_gljournal
+      state: mounted
+  tags: node
+
+- name: Set FS options for graylog logical volume
+  shell: "tune2fs -c 0 -i 0 -r 0 /dev/mapper/vg_graylog-lv_gljournal"
+  tags: node
+
+- name: Create graylog group
+  group:
+      name: graylog
+      system: yes
+  tags: node
+
+- name: Copy Beats CA private key to servers
+  copy:
+      src: files/beats-ca.key.pem
+      dest: /etc/pki/tls/private/beats-ca.key.pem
+      owner: root
+      group: graylog
+      mode: 0440
+  tags: node
+
+- name: Copy Beats CA certificate to servers
+  copy:
+      src: files/beats-ca.cert.pem
+      dest: /etc/pki/tls/certs/beats-ca.cert.pem
+      owner: root
+      group: root
+      mode: 0444
+  tags: node
+
+- name: Install required packages
+  yum:
+      state: present
+      name: "{{ item }}"
+      disable_gpg_check: yes
+  with_items:
+      - mongodb-server
+      - mongodb
+      - graylog-server
+      - iptables-services
+      - java-1.8.0-openjdk-headless
+      - httpd
+      - mod_ssl
+      - mod_ldap
+  tags: node
+
+- name: Copy mongodb keyfile
+  copy:
+      src: files/mongodb-graylog-key
+      dest: /etc/mongodb-graylog-key
+      owner: mongodb
+      group: root
+      mode: 0400
+  tags: node
+
+- name: Create mongodb config file
+  copy:
+      src: files/graylog-mongod.conf
+      dest: /etc/mongod.conf
+      owner: root
+      group: root
+      mode: 0644
+  tags: node
+
+- name: Start and enable mongod service
+  systemd:
+      enabled: yes
+      name: mongod
+      state: started
+  tags: node
+
+- name: Create graylog server.conf file
+  template:
+      src: templates/graylog-server.conf.j2
+      dest: /etc/graylog/server/server.conf
+      owner: root
+      group: root
+      mode: 0644
+  tags: node
+
+- name: Create graylog sysconfig file
+  template:
+      src: templates/sysconfig-graylog-server.j2
+      dest: /etc/sysconfig/graylog-server
+      owner: root
+      group: root
+      mode: 0644
+  tags: node
+
+- name: Copy graylog kafka input plugin jar file
+  copy:
+      src: files/graylog-plugin-kafka-0.8.2.jar
+      dest: /usr/share/graylog-server/plugin/graylog-plugin-kafka-0.8.2.jar
+      owner: root
+      group: root
+      mode: 0644
+  tags: node
+
+- name: Enable and start graylog-server service through systemd
+  systemd:
+      daemon_reload: no
+      enabled: yes
+      name: graylog-server
+      state: started
+  tags: node
+
+- name: Set file ownership and permissions of /etc/graylog directory recursively
+  file:
+      path: /etc/graylog
+      owner: graylog
+      group: root
+      mode: "o-rwx"
+      recurse: yes
+      state: directory
+  tags: node
+
+#- name: Create cerebro group
+#group:
+#    name: cerebro
+#    gid: 1010
+#tags: node
+#
+#- name: Create cerebro user
+#  user:
+#      name: cerebro
+#      comment: "Cerebro Account"
+#      uid: 1010
+#      group: cerebro
+#      shell: /sbin/nologin
+#  tags: node
+#
+#- name: Create /usr/local/apps directory
+#  file:
+#      path: /usr/local/apps
+#      owner: root
+#      group: root
+#      mode: 0755
+#      state: directory
+#  tags: node
+#
+#- name: Copy cerebro .tgz file
+#  copy:
+#      src: "{{ item }}"
+#      dest: /usr/local/apps
+#      owner: root
+#      group: root
+#      mode: 0644
+#  with_items: "files/cerebro-{{ cerebro_version }}.tgz"
+#  tags: node
+#
+#- name: Untar cerebro .tgz file
+#  unarchive:
+#      copy: no
+#      creates: "/usr/local/apps/cerebro-{{ cerebro_version }}"
+#      src: "/usr/local/apps/cerebro-{{ cerebro_version }}.tgz"
+#      dest: "/usr/local/apps/"
+#  tags: node
+#
+#- name: Set file ownership and permissions of cerebro directory recursively
+#  file:
+#      path: "/usr/local/apps/cerebro-{{ cerebro_version }}"
+#      owner: cerebro
+#      group: cerebro
+#      mode: "o-rwx"
+#      recurse: yes
+#      state: directory
+#  tags: node
+#
+#- name: Create /usr/local/apps/cerebro-prod symlink
+#  file:
+#      path: /usr/local/apps/cerebro-prod
+#      state: link
+#      src: "/usr/local/apps/cerebro-{{ cerebro_version }}"
+#  tags: node
+#
+#- name: Create cerebro log directory
+#  file:
+#      path: /var/log/cerebro
+#      owner: cerebro
+#      group: cerebro
+#      mode: 0770
+#      state: directory
+#  tags: node
+#
+#- name: Create cerebro application config file
+#  template:
+#      src: templates/cerebro-application.conf.j2
+#      dest: /usr/local/apps/cerebro-prod/conf/application.conf
+#      owner: cerebro
+#      group: cerebro
+#      mode: 0660
+#  tags: node
+#
+#- name: Create cerebro logback config file
+#  copy:
+#      src: files/cerebro-logback.xml.conf
+#      dest: /usr/local/apps/cerebro-prod/conf/logback.xml
+#      owner: cerebro
+#      group: cerebro
+#      mode: 0660
+#  tags: node
+#
+#- name: Create cerebro service file
+#  copy:
+#      src: files/cerebro.service
+#      dest: /etc/systemd/system/cerebro.service
+#      owner: root
+#      group: root
+#      mode: 0644
+#  tags: node
+#
+#- name: Enable and start the cerebro service
+#  systemd:
+#      enabled: yes
+#      name: cerebro
+#      state: started
+#  tags: node
+#
+## Note: the 'openssl_privatekey', 'openssl_csr' and 'openssl_certificate' modules don't work here as pyOpenSSL>=0.15 is required
+#- name: Create RSA private key and self-signed certificate for apache
+#  command: openssl req -x509 \
+#          -newkey rsa:4096 \
+#          -keyout /etc/pki/tls/private/cerebro-key.pem \
+#          -out /etc/pki/tls/certs/cerebro-cert.pem \
+#          -days 3650 \
+#          -nodes \
+#          -subj "/C=AU/ST=New South Wales/L=Sydney/O=NTT Com ICT Solutions Pty Ltd/OU=ESBU/CN={{ ansible_fqdn }}/emailAddress=root"
+#  args:
+#      creates: /etc/pki/tls/private/cerebro-key.pem
+#  tags: node
+#
+#- name: Set RSA private key ownership and permissions
+#  file:
+#      path: /etc/pki/tls/private/cerebro-key.pem
+#      owner: root
+#      group: apache
+#      mode: 0440
+#  tags: node
+#
+#- name: Set certificate ownership and permissions
+#  file:
+#      path: /etc/pki/tls/certs/cerebro-cert.pem
+#      owner: root
+#      group: root
+#      mode: 0644
+#  tags: node
+#
+#- name: Create apache config file for cerebro 
+#  template:
+#      src: templates/httpd-cerebro.conf.j2
+#      dest: /etc/httpd/conf.d/cerebro.conf
+#      owner: root
+#      group: root
+#      mode: 0644
+#  tags: node
+#
+#- name: Enable and start the apache service
+#  systemd:
+#      enabled: yes
+#      name: httpd
+#      state: started
+#  tags: node

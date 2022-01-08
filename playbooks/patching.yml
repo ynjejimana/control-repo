@@ -1,0 +1,53 @@
+---
+
+- name: Server Patching
+  hosts: all
+  become: True
+
+
+  pre_tasks:
+
+    - name: RHEL6 | Stop & Disable puppet
+      service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      loop:
+        - 'puppet'
+      when:
+        - puppet_installed
+        - ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'
+        - "'puppet' in services and ansible_facts.services['puppet']['state'] == 'running'"
+      tags:
+        - njeji_pre
+        - patching
+        - patch_full_process
+        - njeji
+
+    - name: RHEL7 | Stop & Disable puppet
+      service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      loop:
+        - 'puppet'
+      when:
+        - puppet_installed
+        - ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'
+        - "'puppet.service' in services and ansible_facts.services['puppet.service']['state'] == 'running'"
+      tags:
+        - njeji_pre
+        - patching
+        - patch_full_process
+        - njeji
+
+  tasks:
+
+    - name: Perform patching
+      yum:
+        name: '*'
+        state: latest
+      tags:
+        - patching
+        - patch_full_process
+        - njeji

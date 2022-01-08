@@ -1,0 +1,104 @@
+# Install and configure cerebro
+# Requires the cerebro .tgz file to be in the 'files' directory
+- name: Create cerebro group
+  group:
+      name: cerebro
+      gid: 1010
+  tags: cerebro
+
+- name: Create cerebro user
+  user:
+      name: cerebro
+      comment: "Cerebro Account"
+      uid: 1010
+      group: cerebro
+      shell: /sbin/nologin
+  tags: cerebro
+
+- name: Create /usr/local/apps directory
+  file:
+      path: /usr/local/apps
+      owner: root
+      group: root
+      mode: 0755
+      state: directory
+  tags: cerebro
+
+- name: Copy cerebro .tgz file
+  copy:
+      src: "{{ item }}"
+      dest: /usr/local/apps
+      owner: root
+      group: root
+      mode: 0644
+  with_items: "files/cerebro-{{ cerebro_version }}.tgz"
+  tags: cerebro
+
+- name: Untar cerebro .tgz file
+  unarchive:
+      copy: no
+      creates: "/usr/local/apps/cerebro-{{ cerebro_version }}"
+      src: "/usr/local/apps/cerebro-{{ cerebro_version }}.tgz"
+      dest: "/usr/local/apps/"
+  tags: cerebro
+
+- name: Set file ownership and permissions of cerebro directory recursively
+  file:
+      path: "/usr/local/apps/cerebro-{{ cerebro_version }}"
+      owner: cerebro
+      group: cerebro
+      mode: "o-rwx"
+      recurse: yes
+      state: directory
+  tags: cerebro
+
+- name: Create /usr/local/apps/cerebro-prod symlink
+  file:
+      path: /usr/local/apps/cerebro-prod
+      state: link
+      src: "/usr/local/apps/cerebro-{{ cerebro_version }}"
+  tags: cerebro
+
+- name: Create cerebro log directory
+  file:
+      path: /var/log/cerebro
+      owner: cerebro
+      group: cerebro
+      mode: 0770
+      state: directory
+  tags: cerebro
+
+- name: Create cerebro application config file
+  template:
+      src: templates/cerebro-application.conf.j2
+      dest: /usr/local/apps/cerebro-prod/conf/application.conf
+      owner: cerebro
+      group: cerebro
+      mode: 0660
+  tags: cerebro
+
+- name: Create cerebro logback config file
+  copy:
+      src: files/cerebro-logback.xml.conf
+      dest: /usr/local/apps/cerebro-prod/conf/logback.xml
+      owner: cerebro
+      group: cerebro
+      mode: 0660
+  tags: cerebro
+
+- name: Create cerebro service file
+  copy:
+      src: files/cerebro.service
+      dest: /etc/systemd/system/cerebro.service
+      owner: root
+      group: root
+      mode: 0644
+  tags: cerebro
+
+- name: Enable and start the cerebro service
+  systemd:
+      enabled: yes
+      name: cerebro
+      state: restarted
+      daemon_reload: yes
+  tags: cerebro

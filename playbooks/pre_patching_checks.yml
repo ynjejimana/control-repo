@@ -1,0 +1,128 @@
+---
+
+- name: Checks for patching
+  hosts: all
+  become: True
+
+  vars:
+
+    mountname: '/var'
+    minimum_diskspace: 1.5
+  tasks:
+
+    - name: "Ensure that free space on {{ mountname }} is greater than 30%"
+      assert:
+        that: item.size_available / 1073741824 > minimum_diskspace
+        msg: 'Remaining disk space has reached {{ item.size_available | filesizeformat }} need 1.5GB to proceed.'
+      when: item.mount == mountname
+      loop: "{{ ansible_mounts | flatten(levels=1) }}"
+      register: var_diskspace
+      tags:
+        - njeji
+        - patching
+        - pre_patch_checks
+        - patch_full_process
+
+    - debug:
+        msg: "{{ var_diskspace }}"
+      tags:
+        - njeji
+        - patching
+        - pre_patch_checks
+        - patch_full_process
+
+    - debug:
+        msg: "{{ var_diskspace|json_query('results[*].msg') }}"
+      tags:
+        - njeji
+        - patching
+        - pre_patch_checks
+        - patch_full_process
+
+    - name: "Ensure that free space on / is greater than 30% if /var is not separate"
+      assert:
+        that: item.size_available / 1073741824 > minimum_diskspace
+        msg: 'Remaining disk space has reached {{ item.size_available | filesizeformat }} need 1.5GB to proceed.'
+      when:
+        - item.mount == "/"
+        - "'All assertions passed' not in var_diskspace|json_query('results[*].msg')"
+      loop: "{{ ansible_mounts | flatten(levels=1) }}"
+      tags:
+        - patching
+        - pre_patch_checks
+        - patch_full_process
+
+    - name: Check if puppet is installed
+      yum:
+        list: puppet
+      register: puppet_installed
+      tags:
+        - njeji
+        - patching
+        - pre_patch_checks
+        - patch_full_process
+        - reboot
+
+    - name: Check if kernel update is applicable
+      yum:
+        list: updates
+      register: kernel_info
+      tags:
+        - njeji
+        - patching
+        - pre_patch_checks
+        - patch_full_process
+        - reboot
+
+    - set_fact:
+        puppet: |
+          {% if 'installed' in puppet_installed|json_query('results[*].yumstate') %}
+          true
+          {% else %}
+          false
+          {% endif %}
+        kernel_update: |
+          {% if 'kernel' in kernel_info.results| map(attribute='name') | list %}
+          true
+          {% else %}
+          false
+          {% endif %}
+        tags:
+          - njeji
+          - patching
+          - reboot
+          - pre_patch_checks
+          - patch_full_process
+
+    - name: Ensure that installonly_limit is 2
+      lineinfile:
+        path: /etc/yum.conf
+        regexp: ^installonly
+        line: installonly_limit=2
+      tags:
+        - patching
+        - reboot
+        - pre_patch_checks
+        - patch_full_process
+
+    - name: Check running services
+      service_facts:
+      tags:
+        - patching
+        - reboot
+        - pre_patch_checks
+        - patch_full_process
+
+    - name: Remove Upstream Repos
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - '/etc/yum.repos.d/CentOS-*'
+        - '/etc/yum.repos.d/public-yum-ol6'
+        - '/etc/yum.repos.d/public-yum-ol7'
+      tags:
+        - patching
+        - reboot
+        - pre_patch_checks
+        - patch_full_process

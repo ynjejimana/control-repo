@@ -1,0 +1,76 @@
+# Prepare the servers for the software installs and configures.
+# Assumes the servers have one OS disk and two other disks attached for use as graylog journal and elasticsearch data.
+- name: Uninstall undesired packages
+  yum:
+      state: absent
+      name: "{{ item }}"
+  with_items:
+      - NetworkManager
+      - NetworkManager-libnm
+      - NetworkManager-wifi
+      - NetworkManager-team
+      - NetworkManager-tui
+  tags: prepare
+
+- name: Create disk partition for graylog journal directory
+  parted:
+      device: "{{ graylog_device }}"
+      number: 1
+      flags: [ lvm ]
+      state: present
+  tags: prepare
+
+- name: Create LVM volume group for graylog
+  lvg:
+      vg: "{{ graylog_vg }}"
+      pvs: "{{ graylog_device }}1"
+  tags: prepare
+
+- name: Create LVM logical volume for graylog journal directory
+  lvol:
+      lv: "{{ graylog_lv }}"
+      vg: "{{ graylog_vg }}"
+      size: +100%FREE
+  tags: prepare
+
+- name: Create ext4 filesystem on graylog logical volume
+  filesystem:
+      fstype: ext4
+      dev: "/dev/mapper/{{ graylog_vg }}-{{ graylog_lv }}"
+  tags: prepare
+
+- name: Create fstab entry for graylog logical volume
+  mount:
+      fstype: ext4
+      path: "{{ graylog_mtpt }}"
+      src: "/dev/mapper/{{ graylog_vg }}-{{ graylog_lv }}"
+      state: mounted
+  tags: prepare
+
+- name: Set FS options for graylog logical volume
+  shell: "tune2fs -c 0 -i 0 -r 0 /dev/mapper/{{ graylog_vg }}-{{ graylog_lv }}"
+  tags: prepare
+
+- name: Create graylog group
+  group:
+      name: graylog
+      system: yes
+  tags: prepare
+
+- name: Copy Beats CA private key to servers
+  copy:
+      src: files/beats-ca.key.pem
+      dest: /etc/pki/tls/private/beats-ca.key.pem
+      owner: root
+      group: graylog
+      mode: 0440
+  tags: prepare
+
+- name: Copy Beats CA certificate to servers
+  copy:
+      src: files/beats-ca.cert.pem
+      dest: /etc/pki/tls/certs/beats-ca.cert.pem
+      owner: root
+      group: root
+      mode: 0444
+  tags: prepare

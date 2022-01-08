@@ -1,0 +1,36 @@
+---
+# vars file for graylog-cluster
+elastic_device: /dev/sdb
+elastic_vg: vg_elastic
+elastic_lv: lv_esdata
+elastic_mtpt: /var/lib/elasticsearch
+elastic_logpath: /var/log/elasticsearch
+elastic_cluster: elasticsearch-es-01
+elastic_jvm_xms: 8g
+elastic_jvm_xmx: 8g
+
+graylog_url: graylog.esbu.lab.com.au
+graylog_device: /dev/sdc
+graylog_vg: vg_graylog
+graylog_lv: lv_gljournal
+graylog_mtpt: /var/lib/graylog-server
+graylog_msg_jnl_max_age: 168h
+graylog_msg_jnl_max_size: 15gb
+graylog_jvm_xms: 4g
+graylog_jvm_xmx: 4g
+
+cerebro_version: 0.8.5
+graylog_kafka_plugin_version: 0.8.2
+
+httpd_ad_ca_cert_path: /etc/pki/tls/certs
+httpd_ad_ca_cert_filename: ad-GLOBCA01-CA.crt
+httpd_ad_svc_acct_name: CN=svc_logging_bind,OU=Service Accounts,OU=Administrative,OU=Enterprise Services,DC=lab,DC=com
+httpd_ad_svc_acct_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          6163
+
+# graylog web gui account
+graylog_svc_account_username: svc_graylog
+graylog_svc_account_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          6136

@@ -1,0 +1,34 @@
+---
+
+- name: NJeJI pre-patching tasks
+  hosts: njeji*
+  become: yes
+
+  tasks:
+
+    - name: Includes DCS agent tasks for hosts in dcs_agent group
+      include_tasks: tasks/dcs_agent.yml
+      when: dcs_agent_remove
+      tags:
+        - dcs_agent_remove
+        - dcs_remove
+        - njeji
+        - njeji_pre_tasks
+        - pre_patch_checks
+        - patch_full_process
+        - reboot
+
+    - name: Stop NJeJI additional services
+      service:
+        name: "{{ njeji_services }}"
+        state: stopped
+        enabled: no
+      loop:
+        - 'gcstartup'
+        - 'splunk'
+      tags:
+        - njeji
+        - njeji_pre_tasks
+        - pre_patch_checks
+        - patch_full_process
+        - reboot

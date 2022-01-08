@@ -1,0 +1,22 @@
+# Ensure the specified VMs have local group membership for AD users.
+# This isn't possible with puppet's user/group functionality, or with ansible's --
+# so we need to use ansible's "lineinfile" to add the directory-based user
+# to the local group.
+# The variables 'ensure_user' and 'ensure_group' are in group_vars.
+
+- hosts: njeji-nonp-oag:njeji-nonp-fhi:njeji-nonp-ocr:njeji-nonp-oam
+  tasks:
+    - name: Test that the group exists
+      command: "awk /^{{ ensure_group }}/ /etc/group"
+      register: result
+
+    - name: Set a variable with the result
+      set_fact:
+        check: "{{ result.stdout_lines[0].split(':')[-1] }}"
+
+    - name: Add the non-local user to the local group if it is not already a member
+      lineinfile:
+        path: /etc/group
+        regexp: "{{ result.stdout_lines[0] }}"
+        line: "{{ result.stdout_lines[0] }},{{ ensure_user }}"
+      when: check is not search ("(^|,)"+"{{ ensure_user }}"+"(,|$)")
