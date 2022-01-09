@@ -1,0 +1,87 @@
+#!/bin/sh
+#
+# chkconfig: - 85 15
+# description: Zabbix proxy daemon
+#
+
+### BEGIN INIT INFO
+# Provides: zabbix-proxy
+# Required-Start: $local_fs $network
+# Required-Stop: $local_fs $network
+# Default-Start:
+# Default-Stop: 0 1 2 3 4 5 6
+# Short-Description: Start and stop Zabbix proxy
+# Description: Zabbix proxy daemon
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+exec=/usr/sbin/zabbix_proxy
+prog=${exec##*/}
+syscf=${0##*/}
+lockfile=/var/lock/subsys/$syscf
+
+[ -f /etc/sysconfig/$syscf ] && . /etc/sysconfig/$syscf
+
+config=${CFG_FILE:-/etc/zabbix/zabbix_proxy.conf}
+if [ ! -f $config ]; then
+	echo "Not starting Zabbix proxy: Config file $config not found!" 
+	echo "Check /etc/sysconfig/$syscf"
+	exit 3
+fi
+
+pidfile=$(grep -e "^PidFile=.*$" $config | cut -d= -f2)
+param="-c $config"
+
+start()
+{
+    echo -n $"Starting Zabbix proxy: "
+    daemon --user zabbixsrv --pidfile "$pidfile" $exec $param
+    rv=$?
+    echo
+    [ $rv -eq 0 ] && touch $lockfile
+    return $rv
+}
+
+stop()
+{
+    echo -n $"Shutting down Zabbix proxy: "
+    killproc -p "$pidfile" $prog
+    rv=$?
+    echo
+    [ $rv -eq 0 ] && rm -f $lockfile
+    return $rv
+}
+
+restart()
+{
+    stop
+    start
+}
+
+case "$1" in
+    start|stop|restart)
+        $1
+        ;;
+    force-reload)
+        restart
+        ;;
+    status)
+        status -p "$pidfile" -l $prog $exec
+        ;;
+    try-restart|condrestart)
+        if status -p "$pidfile" -l $prog $exec >/dev/null ; then
+            restart
+        fi
+        ;;
+    reload)
+        action $"Service ${0##*/} does not support the reload action: " /bin/false
+        exit 3
+        ;;
+    *)
+	echo $"Usage: $0 {start|stop|status|restart|try-restart|force-reload}"
+	exit 2
+	;;
+esac
+

@@ -1,0 +1,12 @@
+#
+# Reject emails *TO* these domains
+
+example.com	REJECT example.com is not a real domain
+example.net	REJECT example.net is not a real domain
+hatmail.com	REJECT hatmail has invalid IP address
+hormail.com	REJECT Typo hormail is not hotmail
+hotimal.com	REJECT Typo hotimal is not hotmail
+hotimail.com	REJECT Typo hotimail is not hotmail
+hotmal.com	REJECT Typo hotmal is not hotmail
+hotmil.com	REJECT Typo hotmil is not hotmail
+temp.com        REJECT

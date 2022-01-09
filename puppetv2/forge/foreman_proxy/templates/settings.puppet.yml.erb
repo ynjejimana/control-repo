@@ -1,0 +1,17 @@
+---
+<% if @puppet -%>
+:enabled: true
+:puppet_version: "<%= @puppet_version %>"
+<% if @puppet_provider == "puppetssh" -%>
+:puppet_provider: puppetssh
+:puppet_conf: /etc/puppet/puppet.conf
+:puppetssh_sudo: true
+:puppetssh_command: /usr/bin/sudo /usr/bin/puppet agent --onetime --no-usecacheonfailure
+:puppetssh_user: lab
+:puppetssh_keyfile: /etc/foreman-proxy/puppetssh/id_rsa
+<% else -%>
+:puppet_provider: salt
+<% end -%>
+<% else -%>
+:enabled: false
+<% end -%>

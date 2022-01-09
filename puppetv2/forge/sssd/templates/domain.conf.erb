@@ -1,0 +1,12 @@
+[domain/<%= @ldap_domain %>]
+id_provider = ad
+fallback_homedir = /home/%u
+<% if @ldap_filter -%>
+access_provider = ldap
+ldap_access_order = filter, expire
+ldap_account_expire_policy = ad
+ldap_access_filter = <%= @ldap_filter %>
+ldap_sasl_mech = GSSAPI
+ldap_sasl_authid = <%= @hostname.upcase %>$@<%= @ldap_domain.upcase %>
+ldap_schema = ad
+<% end -%>

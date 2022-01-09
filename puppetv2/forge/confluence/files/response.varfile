@@ -1,0 +1,8 @@
+#install4j response file for Confluence 4.2.11
+#Fri Sep 14 15:19:20 EST 2012
+executeLauncherAction$Boolean=true
+app.install.service$Boolean=true
+existingInstallationDir=/opt/atlassian/confluence
+sys.confirmedUpdateInstallationString=false
+sys.languageId=en
+sys.installationDir=/opt/atlassian/confluence

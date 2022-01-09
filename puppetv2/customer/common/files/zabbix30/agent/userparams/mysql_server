@@ -1,0 +1,1 @@
+UserParameter=mysql.slave_status_info[*],mysql -u$1 -p$2 -e "show slave status\G" | grep "$3" | awk '{print $$2}'

@@ -1,0 +1,16 @@
+language: ruby
+rvm:
+  - 1.9.3
+before_install: gem install bundler
+script: rake test
+branches:
+  only:
+    - master
+notifications:
+  email:
+    - craig@cwatson.org
+gemfile: .gemfile
+env:
+  - PUPPET_VERSION=3.2.3        # latest 3.2
+  - PUPPET_VERSION=3.1.1        # latest 3.1
+  - PUPPET_VERSION=3.0.2        # latest 3.0

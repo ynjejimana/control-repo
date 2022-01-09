@@ -1,0 +1,28 @@
+[web]
+description = <%= @description %>
+baseurl = /<%= @title %>
+<%- if @read_write_users -%>
+allow_push = <%= @read_write_users.join(", ") %>
+<%- end -%>
+<%- if @read_only_users -%>
+allow_read = <%= @read_only_users.join(", ") %>
+<%- end -%>
+
+[extensions]
+hgext.notify = /usr/share/python-support/mercurial-common/hgext/notify.py
+
+[hooks]
+changegroup.notify = python:hgext.notify.hook
+
+[email]
+from = <%= @from_email %>
+
+[smtp]
+host = <%= @mail_server %>
+
+[notify]
+sources = push pull
+test = False
+config = /srv/hg/<%= @title %>
+template = Subject: {webroot|basename} {author}\n\n\ndetails:   {baseurl}{webroot}/rev/{node|short}\nchangeset: {rev}:{node|short}\nuser:      {author}\ndate:      {date|date}\ndescription:\n{desc}\n
+maxdiff = -1

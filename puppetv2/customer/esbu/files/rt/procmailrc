@@ -1,0 +1,65 @@
+#
+# Procmail for request tracker
+
+MAILGATE=/usr/bin/rt-mailgate-3.6
+LOGFILE=log
+VERBOSE=on
+
+# Spam and crap we don't care about, from addresses
+:0
+* ^From:.*(ITServiceDesk@dexus\.com|root@backup\.frontline\.com\.au|nagios@seven\.com\.au|root@seven\.com\.au|cdonovan@vibrant\.com|hppartner.australia@hp\.com|@hp-ecomm\.com)
+/dev/null
+
+# added by Jephe as per request from Shahid and John V
+:0
+* ^From:nxtops@nextdc\.com
+/dev/null
+# end
+
+:0
+* ^TO(abuse|postmaster|noc|security|hostmaster)@(harbourmsp|frontlinemsp|fmsp)\.*
+| /usr/bin/stripper
+#| $MAILGATE --queue 'Incident' --action correspond --url http://localhost/rt/
+
+:0
+* ^TOcomment@(harbourmsp|frontlinemsp|fmsp)\.*
+| /usr/bin/stripper
+
+
+###########################################################
+#
+# Specific rule to billing@harbourmsp.com
+#
+:0
+* ^TObilling@(harbourmsp|frontlinemsp|fmsp)\.*
+| /usr/bin/stripper Accounts
+
+
+###########################################################
+#
+# Specific rule to support@harbourmsp.com
+#
+:0
+* ^TOsupport@(harbourmsp|frontlinemsp|fmsp)\.*
+| /usr/bin/stripper
+
+#added by Jephe
+:0
+* ^CCsupport@lab.com
+| /usr/bin/stripper
+
+###########################################################
+#
+# Junk the rest
+#
+:0
+* ^TO.*@(fit\.com\.au|frontline\.com\.au)
+/dev/null
+
+###########################################################
+#
+# Default action
+#
+:0
+| /usr/bin/stripper
+#| $MAILGATE --action correspond --queue 'Incident' --url http://localhost/rt/

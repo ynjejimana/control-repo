@@ -1,0 +1,23 @@
+try {
+  #New-EventLog –LogName Application –Source “LogicMonitor”
+  #Write-EventLog -LogName Application -Source "LogicMonitor" -EventID 9001 -EntryType Information -Message "LogicMonitor WMI access configuration has started"
+  $sid = ((New-Object System.Security.Principal.NTAccount('<%= @upn %>')).Translate([System.Security.Principal.SecurityIdentifier])).Value
+  $root = (Invoke-WmiMethod -Namespace "root" -Path "__systemsecurity=@" -Name GetSecurityDescriptor).Descriptor
+  $accessMask = "33"
+  $ace = (New-Object System.Management.ManagementClass("win32_Ace")).CreateInstance()
+  $ace.AccessMask = $accessMask
+  $ace.AceType = 0x0
+  $trustee = (New-Object System.Management.ManagementClass("win32_Trustee")).CreateInstance()
+  $trustee.SidString = $sid
+  $ace.Trustee = $trustee
+  $ace.AceFlags = 0x2
+  $root.DACL += $ace.psobject.immediateBaseObject
+  $rootSetSD = @{Namespace="root";Path="__systemsecurity=@";Name="SetSecurityDescriptor";ArgumentList=$root.psobject.immediateBaseObject}
+  Invoke-WmiMethod @rootSetSD
+  #Write-EventLog -LogName Application -Source "LogicMonitor" -EventID 9009 -EntryType Information -Message "LogicMonitor WMI access configuration has finished"
+}
+catch {
+  Write-Error $_
+
+  exit 1
+}

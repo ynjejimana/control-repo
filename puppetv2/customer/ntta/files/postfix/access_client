@@ -1,0 +1,5 @@
+#
+# reject email FROM these servers
+#
+210.87.32.202		REJECT Host $1 rejected due to excessive spamming
+

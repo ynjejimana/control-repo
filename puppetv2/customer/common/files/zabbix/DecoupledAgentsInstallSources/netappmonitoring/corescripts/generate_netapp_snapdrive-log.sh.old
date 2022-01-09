@@ -1,0 +1,17 @@
+#!/bin/sh
+
+host=$1
+
+profile=$2
+
+#mkdir -p /tmp/netapp_data_snapdrive
+
+outputdir=/tmp/netapp_data_snapdrive
+
+datafile_logs=$outputdir/$host-$profile"_log"
+
+#
+
+ssh $host "smo backup list -profile '$profile' -archivelogs" >$datafile_logs
+
+exit 0;

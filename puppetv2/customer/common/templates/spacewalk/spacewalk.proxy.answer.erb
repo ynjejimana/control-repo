@@ -1,0 +1,19 @@
+VERSION="<%= sw_version %>"
+RHN_PARENT="<%= sw_satellite_server %>"
+TRACEBACK_EMAIL="<%= sw_admin_email %>"
+USE_SSL="Y"
+CA_CHAIN="/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT"
+HTTP_PROXY=
+SSL_ORG="<%= sw_ca_org %>"
+SSL_ORGUNIT="<%= sw_ca_org_unit %>"
+SSL_COMMON="proxy.lab.com.au"
+SSL_CITY="<%= sw_ca_city %>"
+SSL_STATE="<%= sw_ca_state %>"
+SSL_COUNTRY="<%= sw_ca_country_code %>"
+SSL_EMAIL="<%= sw_ca_cert_email %>"
+SSL_PASSWORD="<%= sw_ca_cert_password %>"
+INSTALL_MONITORING="y"
+POPULATE_CONFIG_CHANNEL="n"
+SSL_CNAME_ASK=''
+MONITORING_PARENT="<%= sw_satellite_server %>"
+ENABLE_SCOUT=n

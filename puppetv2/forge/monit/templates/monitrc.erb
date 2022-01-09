@@ -1,0 +1,35 @@
+# /etc/monit/monitrc - Monit Configuration file
+# 
+# This file is handled by puppet, any local changes will be lost
+#
+
+set alert <%= has_variable?("monit_alert") ? @monit_alert : @monit_default_alert %>
+
+<%- if @monit_enable_httpd.to_s == 'yes' then -%>
+<%# BEGIN functions %>
+<%
+require 'digest/sha1'
+
+def password
+  if defined?(monit_secret)
+    s = @monit_secret
+  else
+    s = @monit_default_secret
+  end
+
+  return Digest::SHA1.hexdigest(s + Digest::SHA1.hexdigest(s + @fqdn))
+end
+%>
+<%# END functions %>
+
+set httpd port <%= has_variable?("monit_httpd_port") ? @monit_httpd_port : "2812" %> and use address localhost
+    allow localhost
+    allow monit:<%= @password %>
+<%- end -%>
+
+set daemon <%= @monit_pool_interval %>
+set logfile syslog facility log_daemon
+set mailserver <%= has_variable?("monit_mailserver") ? @monit_mailserver : "localhost" %> 
+
+# Include settings from other files
+include /etc/monit/conf.d/*.monitrc

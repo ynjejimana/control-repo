@@ -1,0 +1,39 @@
+{
+  "name": "bovy89-tuned",
+  "version": "1.0.1",
+  "author": "bovy89",
+  "summary": "This module manages tuned deamon",
+  "license": "Apache-2.0",
+  "source": "https://github.com/bovy89/tuned",
+  "project_page": "https://github.com/bovy89/tuned",
+  "issues_url": "https://github.com/bovy89/tuned/issues",
+  "dependencies": [
+    {"name":"puppetlabs/stdlib","version_requirement":">=4.17.0"}
+  ],
+  "data_provider": null,
+  "tags": [
+    "tuned"
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 3.8.7 < 6.0.0"
+    }
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "6",
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "6",
+        "7"
+      ]
+    }
+  ]
+}

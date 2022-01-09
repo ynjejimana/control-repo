@@ -1,0 +1,15 @@
+# default: on
+# description: mysqlnodecheck
+service mysqlnodecheck
+{
+        flags           = REUSE
+        socket_type     = stream
+        port            = 19200
+        wait            = no
+        user            = root
+        server          = /usr/local/sbin/mysqlnodecheck
+        log_on_failure  += USERID
+        disable         = no
+        only_from       = 0.0.0.0/0 
+        per_source      = UNLIMITED
+}

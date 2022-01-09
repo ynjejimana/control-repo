@@ -1,0 +1,5 @@
+auth        required      pam_env.so
+auth        sufficient    pam_sss.so 
+auth        required      pam_deny.so
+account     sufficient    pam_sss.so
+account     required      pam_deny.so

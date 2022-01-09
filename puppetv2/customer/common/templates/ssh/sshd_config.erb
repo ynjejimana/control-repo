@@ -1,0 +1,64 @@
+Protocol 2
+GatewayPorts no
+SyslogFacility AUTHPRIV
+PasswordAuthentication yes
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+GSSAPICleanupCredentials yes
+<% if @operatingsystemmajrelease <= '5' -%>
+RhostsRSAAuthentication no
+RhostsAuthentication no
+<% end -%>
+HostbasedAuthentication no
+IgnoreRhosts yes
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+AcceptEnv XMODIFIERS
+<% if @banner_file  -%>
+Banner <%= @banner_file %>
+<% end -%>
+X11Forwarding <%= @x11_forwarding %>
+<% if @x11_forwarding -%>
+<% if @operatingsystemmajrelease == '7' -%>
+AddressFamily inet
+<% end -%>
+<% end -%>
+<% if @sftp_subsystem -%>
+Subsystem	sftp	<%= @sftp_subsystem %>
+<% end -%>
+ClientAliveInterval <%= @client_alive_interval %>
+ClientAliveCountMax <%= @client_alive_count_max %>
+UseDNS no
+AllowTcpForwarding <%= @allow_tcp_forwarding %>
+PermitRootLogin <%= @ssh_as_root %>
+KerberosAuthentication no
+PubkeyAuthentication yes
+UsePAM yes
+GSSAPIAuthentication no
+AuthorizedKeysCommand /usr/bin/sss_ssh_authorizedkeys
+<% if @operatingsystemmajrelease == '7' -%>
+AuthorizedKeysCommandUser root
+<% end -%>
+<% @listenAddresses.each do |value| -%>
+ListenAddress <%= value %>
+<% end -%>
+LoginGraceTime <%= @login_grace_time %>
+<% if @kex_algorithms -%>
+KexAlgorithms "<%= @kex_algorithms %>"
+<% end -%>
+<% if @ciphers -%>
+Ciphers "<%= @ciphers %>"
+<% end -%>
+<% if @macs -%>
+MACs "<%= @macs %>"
+<% end -%>
+<% if @sshd_config_match -%>
+
+<%   @sshd_config_match.sort.each do |key, hash| -%>
+Match <%= key %>
+<%     hash.sort.each do |values| -%>
+  <%= values %>
+<%     end -%>
+<%   end -%>
+<% end -%>

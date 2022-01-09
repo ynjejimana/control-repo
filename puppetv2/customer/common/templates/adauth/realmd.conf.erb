@@ -1,0 +1,16 @@
+[users]
+default-home = /home/%U
+default-shell = <%= default_shell %>
+
+[service]
+automatic-install = yes
+
+[providers]
+sssd = yes
+
+[active-directory]
+default-client = sssd
+
+[<%= domain %>]
+fully-qualified-names = no
+automatic-id-mapping = yes

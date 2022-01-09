@@ -1,0 +1,11 @@
+# This file is managed by Puppet
+PidFile=<%= @zabbix_pid_dir %>/zabbix_agentd.pid
+LogFile=<%= @zabbix_log_dir %>/zabbix_agentd.log
+LogFileSize=100
+Server=<%= @zabbix_proxy_servers.join(",") %>
+Include=<%= @agent_include_dir %>
+<% @agent_include_dir_extra.each do |item| -%>
+Include=<%= @config_dir %>/<%= item %>
+<% end -%>
+Hostname=<%= @hostname %>
+EnableRemoteCommands=<%= @enable_remote_commands %>

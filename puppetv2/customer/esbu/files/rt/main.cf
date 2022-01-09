@@ -1,0 +1,30 @@
+mydomain=harbourmsp.com
+
+smtpd_banner = $myhostname ESMTP $mail_name
+biff = no
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+
+# Uncomment the next line to generate "delayed mail" warnings
+#delay_warning_time = 4h
+
+#myhostname = rt.harbour
+myhostname = harbourmsp.com
+#myhostname = syd-tmg-01.harbourmsp.com
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+#myorigin = /etc/mailname
+mydestination = rt.harbourmsp.com, hmspglobinfr02.harbour, rt.harbour, localhost.localdomain, localhost.localdomain, localhost
+mynetworks = 127.0.0.0/8, 172.16.40.0/24, 210.87.32.72, 118.127.68.163, 172.23.6.12
+mailbox_command = procmail -a "$EXTENSION"
+mailbox_size_limit = 0
+recipient_delimiter = +
+#inet_interfaces = loopback-only
+#relayhost =
+#relayhost = [172.22.2.10]
+relayhost = 172.22.0.25
+#relayhost = relay.int.lab.com.au
+undisclosed_recipients_header =
+#disable_mime_output_conversion=yes
+smtpd_sender_restrictions = check_sender_access hash:/etc/postfix/sender_access

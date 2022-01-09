@@ -1,0 +1,9 @@
+<VirtualHost *:80>
+ServerAdmin unix@lab.com
+DocumentRoot /var/www/html/clamav
+ServerName database.clamav.net
+ServerAlias db.*.clamav.net
+ServerAlias <%= @fqdn %>
+LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combinedrealsize
+CustomLog /var/log/httpd/clamav-access.log combinedrealsize
+</VirtualHost>

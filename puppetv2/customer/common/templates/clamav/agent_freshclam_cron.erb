@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+
+<% if @freshclamUpdateLogFile -%>
+LOGFILE='<%= @freshclamUpdateLogFile %>'
+
+if [ ! -w "${LOGFILE}" ] 
+then
+  touch ${LOGFILE}
+  chown <%= @freshclamDatabaseOwner %>:<%= @freshclamDatabaseOwner %> ${LOGFILE}
+  chmod 0644 ${LOGFILE}
+fi
+<% end -%>
+
+/usr/bin/freshclam --no-warning --stdout | /usr/bin/logger -t clamav -p local6.info

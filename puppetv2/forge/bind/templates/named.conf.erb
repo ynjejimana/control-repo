@@ -1,0 +1,218 @@
+//
+// named.conf
+// WARNING: Puppet managed, do not edit!
+//
+
+<% if !@tsig_keys.empty? -%>
+<% @tsig_keys.sort_by {|key, value| key}.each do |key,value| -%>
+key "<%= key %>" {
+<% value.each do |line| -%>
+    <%= line %>;
+<% end -%>
+};
+
+<% end -%>
+<% end -%>
+<% if !@acls.empty? -%>
+<% @acls.sort_by {|key, value| key}.each do |key,value| -%>
+acl <%= key %> {
+<% value.each do |line| -%>
+    <%= line %>;
+<% end -%>
+};
+
+<% end -%>
+<% end -%>
+<% if !@masters.empty? -%>
+<% @masters.sort_by {|key, value| key}.each do |key,value| -%>
+masters <%= key %> {
+<% value.each do |line| -%>
+    <%= line %>;
+<% end -%>
+};
+
+<% end -%>
+<% end -%>
+options {
+<% if @listen_on_port -%>
+    listen-on port <%= @listen_on_port %> { <%= @listen_on_addr.join("; ") %>; };
+<% end -%>
+<% if @listen_on_v6_port -%>
+    listen-on-v6 port <%= @listen_on_v6_port %> { <%= @listen_on_v6_addr.join("; ") %>; };
+<% end -%>
+<% if !@forwarders.empty? -%>
+    forward only;
+    forwarders { <%= @forwarders.join("; ") %>; };
+<% end -%>
+    directory "<%= @directory %>";
+<% if @managed_keys_directory -%>
+    managed-keys-directory "<%= @managed_keys_directory %>";
+<% end -%>
+<% if @version -%>
+    version "<%= @version %>";
+<% end -%>
+<% if @dump_file -%>
+    dump-file "<%= @dump_file %>";
+<% end -%>
+<% if @statistics_file -%>
+    statistics-file "<%= @statistics_file %>";
+<% end -%>
+<% if @memstatistics_file -%>
+    memstatistics-file "<%= @memstatistics_file %>";
+<% end -%>
+<% if !@allow_query.empty? -%>
+    allow-query { <%= @allow_query.join("; ") %>; };
+<% end -%>
+<% if !@allow_query_cache.empty? -%>
+    allow-query-cache { <%= @allow_query_cache.join("; ") %>; };
+<% end -%>
+    recursion <%= @recursion %>;
+<% if !@allow_recursion.empty? -%>
+    allow-recursion { <%= @allow_recursion.join("; ") %>; };
+<% end -%>
+<% if !@allow_transfer.empty? -%>
+    allow-transfer { <%= @allow_transfer.join("; ") %>; };
+<% end -%>
+<% if !@check_names.empty? -%>
+<% @check_names.each do |line| -%>
+    check-names <%= line %>;
+<% end -%>
+<% end -%>
+<% if !@also_notify.empty? -%>
+    also-notify { <%= @also_notify.join("; ") %>; };
+<% end -%>
+<% if !@send_notifies.empty? -%>
+    notify <%= @send_notifies -%>;
+<% end -%>
+
+    dnssec-enable <%= @dnssec_enable %>;
+    dnssec-validation <%= @dnssec_validation %>;
+    dnssec-lookaside <%= @dnssec_lookaside %>;
+
+    max-ncache-ttl 0;
+    
+    /* Path to ISC DLV key */
+    bindkeys-file "/etc/named.iscdlv.key";
+};
+
+logging {
+<% if @main_log_to_file -%>
+    channel main_log_file {
+        file "/var/log/named/named.log" versions <%= @main_log_versions -%> size <%= @main_log_size -%>;
+        severity info;
+        print-time yes;
+        print-severity yes;
+        print-category yes;
+    };
+<% end -%>
+<% if @main_log_to_syslog -%>
+    channel main_log_syslog {
+        syslog daemon;
+        severity info;
+        print-time yes;
+        print-severity yes;
+        print-category yes;
+    };
+<% end -%>
+<% if @query_log_to_file -%>
+    channel query_log_file {
+        file "/var/log/named/query.log" versions <%= @query_log_versions -%> size <%= @query_log_size -%>;
+        severity dynamic;
+        print-time yes;
+    };
+<% end -%>
+<% if @query_log_to_syslog -%>
+    channel query_log_syslog {
+        syslog <%= @query_log_syslog_facility -%>;
+        severity dynamic;
+        print-time yes;
+    };
+<% end -%>
+<% if @main_log_to_file or @main_log_to_syslog -%>
+    category default {
+<% if @main_log_to_file -%>
+        main_log_file;
+<% end -%>
+<% if @main_log_to_syslog -%>
+        main_log_syslog;
+<% end -%>
+    };
+<% end -%>
+<% if @query_log_to_file or @query_log_to_syslog -%>
+    category queries {
+<% if @query_log_to_file -%>
+        query_log_file;
+<% end -%>
+<% if @query_log_to_syslog -%>
+        query_log_syslog;
+<% end -%>
+    };
+<% end -%>
+    category lame-servers {
+        null;
+    };
+};
+<% if !@views.empty? -%>
+
+<% @views.sort_by {|key,value| key}.each do |key,value| -%>
+<% valid_keys = %w(allow-notify allow-query allow-recursion allow-transfer allow-update-forwarding forwarders match-clients match-destinations match-recursive-only) -%>
+view "<%= key %>" {
+<% valid_keys.sort.each do |valid_key| -%>
+<% if value[valid_key] and !value[valid_key].empty? -%>
+    <%= valid_key %> { <%= value[valid_key].join('; ') %>; };
+<% end -%>
+<% end -%>
+<% if value['includes'] and !value['includes'].empty? -%>
+<% value['includes'].each do |filename| -%>
+    include "<%= filename %>";
+<% end -%>
+<% end -%>
+<% if value['zones'] and !value['zones'].empty? -%>
+    /* View specific zones */
+<% value['zones'].sort_by {|key, value| key}.each do |key,value| -%>
+    zone "<%= key %>" IN {
+<% value.each do |line| -%>
+        <%= line %>;
+<% end -%>
+    };
+
+<% end -%>
+<% if !@zones.empty? -%>
+    /* Global zones */
+<% @zones.sort_by {|key, value| key}.each do |key,value| -%>
+    zone "<%= key %>" IN {
+<% value.each do |line| -%>
+        <%= line %>;
+<% end -%>
+    };
+
+<% end -%>
+<% end -%>
+<% end -%>
+};
+<% end -%>
+<% else -%><%# end views, start no views -%>
+
+zone "." IN {
+    type hint;
+    file "named.ca";
+};
+
+<% if !@zones.empty? -%>
+<% @zones.sort_by {|key, value| key}.each do |key,value| -%>
+zone "<%= key %>" IN {
+<% value.each do |line| -%>
+    <%= line %>;
+<% end -%>
+};
+
+<% end -%>
+<% end -%>
+include "/etc/named.rfc1912.zones";
+<% end -%><%# end no views -%>
+<% if !@includes.empty? -%>
+<% @includes.each do |filename| -%>
+include "<%= filename %>";
+<% end -%>
+<% end -%>
+

@@ -1,0 +1,3 @@
+UserParameter=kafkamirror.configs.discovery,/etc/zabbix/externalscripts/lld-kafkamirror-configs.py
+UserParameter=kafkamirror.members.discovery,/etc/zabbix/externalscripts/lld-kafkamirror-members.py
+

@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Script to strip attachments from mails and redirect the stripped mail to a designated email address
+
+tempfile="/tmp/stripper.$$"
+headers="/tmp/stripper_headers.$$"
+new_body_file="/tmp/stripper_body.$$"
+files_extracted="/tmp/stripper_files.$$"
+attachments_dir="/attachments/"
+attachments_host="http://rtattach.harbour/"
+#support_address="hmsp@service-now.com lab@service-now.com"
+support_address="lab@service-now.com"
+#support_address="lsteele@harbourmsp.com"
+
+wholemail=`/bin/mktemp $tempfile`
+
+# Write standard output into a file so we can manipulate it
+tee $wholemail
+
+# Create a folder each day for attachments to aid archival
+today_date=`date "+%Y%m%d"`
+if [[ ! -d "$attachments_dir$today_date" ]]
+then
+	mkdir $attachments_dir$today_date
+	if [ $? != 0 ]
+	then
+			echo Something went wrong with directory creation of todays date $attachments_dir$todaydate
+			exit 5
+	fi
+	chmod 4755 $attachments_dir$today_date
+fi
+
+# Extract attachments with munpack
+# -C changes to attachments directory
+# -t extracts text from email for body of ticket
+# filenames of attachments are stored in files_extracted variable
+/usr/bin/munpack -t -C $attachments_dir$today_date $wholemail > $files_extracted
+
+# Only run if attachments were actually stripped (check for > 1 as text will be first part)
+files_found=`cat $files_extracted | wc -l`
+if [ "$files_found" -gt 1 ]
+then
+				# Dump all headers from email
+				original_from=`egrep -i '^From:' $wholemail|head -1 | sed 's/\[mailto:/</g' | sed 's/]/>/g'`
+				#original_cc=`egrep -i '^CC:' $wholemail`
+				original_cc=`cat $wholemail | formail -x CC -c`
+				original_to=`cat $wholemail | formail -x To -c`
+				subject=`egrep ^Subject $wholemail|sed 's/Subject: //'`
+				# Get the text (body) of the email to append
+				body_file=`head -1 $files_extracted | awk '{print $1}'`
+
+				# Get all attachments that were stripped
+				# add atachment names to message
+
+				# Remove first file which is body of mail
+				sed -i -e '1d' $files_extracted
+				for file in `cat $files_extracted | awk '{print $1}'`
+				do
+					echo -e "\nHMSP use only:Attachment was stripped from email and is accessible at $attachments_host$today_date/$file" >> $new_body_file
+					# Ensure files extracted are accessible to Web interface and users
+					chmod 644 $attachments_dir$today_date/$file
+				done
+				# Newline before email body
+				echo -e "\n" >> $new_body_file
+
+				# Append body to mail (and strip out =20 from end of line)
+				cat $attachments_dir$today_date/$body_file | sed 's/=20$//g' >> $new_body_file
+
+				# Send reconstructed mail to Service Now
+				cat $new_body_file | mailx -a "$original_from" -a "Cc: $original_cc, $original_to" -s "$subject" $support_address
+
+				# Clean up
+				rm $new_body_file
+else
+  # No attachments so just re-create the mail and forward it on (and strip out =20 from end of line)
+	cat $wholemail | formail -I "" | sed 's/=20$//g' > $new_body_file
+	# Look to see if base-64
+	encoding=`egrep -i '^Content-Transfer-Encoding:' $wholemail|grep 'base64'|wc -l`
+	if [ "$encoding" -gt 0 ]
+	then
+		# Email is in Base 64 so use munpacked attachment
+		body_file=`head -1 $files_extracted | awk '{print $1}'`
+		cat $attachments_dir$today_date/$body_file | sed 's/=20$//g' > $new_body_file
+	fi
+	#original_from=`cat $wholemail | formail -x From -c | awk '{print $1}'`
+  #original_from=`egrep -i '^From:' $wholemail | head -1`
+  original_from=`egrep -i '^From:' $wholemail | head -1 | sed 's/\[mailto:/</g' | sed 's/]/>/g'`
+	original_to=`cat $wholemail | formail -x To -c`
+	original_cc=`cat $wholemail | formail -x CC -c`
+  #original_cc=`egrep -i '^CC:' $wholemail`
+  subject=`egrep ^Subject $wholemail|sed 's/Subject: //'`
+  # Get the text (body) of the email to append
+	cat $new_body_file | mailx -a "$original_from" -a "Cc: $original_cc, $original_to" -s "$subject" $support_address
+fi
+
+# Clean up temp files
+rm $files_extracted
+rm $tempfile
+rm $new_body_file

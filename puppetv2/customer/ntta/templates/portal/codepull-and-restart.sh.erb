@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "Running git pull of codebase into <%= @docroot %>..."
+echo
+
+cd <%= @docroot %>
+git pull
+
+echo "Changing ownership of all files..."
+chown -R apache: .
+
+echo "Gracefully restarting apache..."
+/sbin/service httpd graceful
+
+echo "Done."
+#end

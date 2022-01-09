@@ -1,0 +1,17 @@
+# This file is managed via modulesync
+#
+# use default_module_facts.yaml for module specific
+# facts.
+#
+# Hint if using with rspec-puppet-facts ("on_supported_os.each"):
+#   if a same named fact exists in facterdb it will be overridden.
+---
+concat_basedir: "/dne"
+is_pe: false
+root_home: "/root"
+oradb_inst_loc_data: "/oracle/oraInventory"
+oradb_inst_products: "/oracle/product/11.2/db"
+staging_http_get: "curl"
+sudoversion: "1.8.6p7"
+virtualenv_version: "1.10.1"
+augeasversion: "1.0.0"

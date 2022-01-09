@@ -1,0 +1,70 @@
+###
+## File managed by puppet
+## All manual changes will be overwritten
+##
+## Served by:        '<%= scope.lookupvar('::servername') %>'
+## Module:           '<%= scope.to_hash['module_name'] %>'
+###
+
+# Servers
+<% if @servers.is_a?(Hash) then @servers.keys.sort.each do |server| -%>
+server <%= server %> <%= @servers[server].join(' ') %>
+<% end else Array(@servers).each do |server| -%>
+server <%= server %> iburst
+<% end end -%>
+
+# Ignore stratum in source selection.
+stratumweight 0
+
+# Record the rate at which the system clock gains/losses time.
+driftfile /var/lib/chrony/drift
+
+# Enable kernel RTC synchronization.
+rtcsync
+
+# In first three updates step the system clock instead of slew
+# if the adjustment is larger than 10 seconds.
+makestep 10 3
+
+# Allow client access from local network.
+# i.e: allow 192.168/16
+<% Array(@queryhosts).each do |allowed| -%>
+allow <%= allowed %>
+<% end -%>
+
+# Listen for commands only on localhost.
+bindcmdaddress 127.0.0.1
+bindcmdaddress ::1
+
+# Default is udp/123, the standard NTP port.
+# If set to 0, it will never open the server port and will
+# operate strictly in a client-only mode.
+port <%= @port %>
+
+# Serve time even if not synchronized to any NTP server.
+local stratum 10
+
+keyfile <%= @config_keys %>
+
+# Disable logging of client accesses.
+noclientlog
+
+# Send a message to syslog if a clock adjustment is larger than 0.5 seconds.
+logchange 0.5
+
+<% if defined?(@mailonchange) -%>
+# Send mail  if chronyd applied a correction exceeding given threshold.
+mailonchange <%= @mailonchange %> <%= @threshold %>
+<% end -%>
+
+logdir /var/log/chrony
+#log measurements statistics tracking
+
+<% Array(@refclocks).each do |refclock| -%>
+refclock <%= refclock %>
+<% end -%>
+
+<% if @lock_all -%>
+# Lock chrony to RAM.
+lock_all
+<% end -%>

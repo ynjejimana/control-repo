@@ -1,0 +1,24 @@
+DatabaseDirectory /var/www/html/clamav
+<% if @operatingsystemmajrelease == '7' -%>
+UpdateLogFile /var/log/freshclam.log
+<% else %>
+UpdateLogFile /var/log/clamav/freshclam.log
+<% end -%>
+LogSyslog yes
+<% if @operatingsystemmajrelease == '7' -%>
+DatabaseOwner clamupdate
+<% else %>
+DatabaseOwner clam
+<% end -%>
+DatabaseMirror db.au.clamav.net
+DatabaseMirror db.local.clamav.net
+<% if @avproxy_server != '' -%>
+HTTPProxyServer <%= @avproxy_server %>
+<% end -%>
+<% if @avproxy_port != '' -%>
+HTTPProxyPort <%= @avproxy_port %>
+<% end -%>
+LogFileMaxSize 5M
+LogRotate yes
+DNSDatabaseInfo current.cvd.clamav.net
+ScriptedUpdates no

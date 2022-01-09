@@ -1,0 +1,8 @@
+---
+<% if @tftp -%>
+:enabled: true
+:tftproot: /var/lib/tftpboot
+:tftp_servername: <%= @ipaddress %>
+<% else -%>
+:enabled: false
+<% end -%>

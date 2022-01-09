@@ -1,0 +1,22 @@
+try {
+<% @wmi_namespaces.each do |name, value| -%>
+  $<%= value['name'] %>sid = ((New-Object System.Security.Principal.NTAccount('<%= @upn %>')).Translate([System.Security.Principal.SecurityIdentifier])).Value
+  $<%= value['name'] %> = (Invoke-WmiMethod -Namespace "<%= value['namespace'] %>" -Path "__systemsecurity=@" -Name GetSecurityDescriptor).Descriptor
+  $<%= value['name'] %>accessMask = "<%= value['accessmask'] %>"
+  $<%= value['name'] %>ace = (New-Object System.Management.ManagementClass("win32_Ace")).CreateInstance()
+  $<%= value['name'] %>ace.AccessMask = $<%= value['name'] %>accessMask
+  $<%= value['name'] %>ace.AceType = <%= value['acetype'] %>
+  $<%= value['name'] %>trustee = (New-Object System.Management.ManagementClass("win32_Trustee")).CreateInstance()
+  $<%= value['name'] %>trustee.SidString = $<%= value['name'] %>sid
+  $<%= value['name'] %>ace.Trustee = $<%= value['name'] %>trustee
+  $<%= value['name'] %>ace.AceFlags = <%= value['aceflags'] %>
+  $<%= value['name'] %>.DACL += $<%= value['name'] %>ace.psobject.immediateBaseObject
+  $<%= value['name'] %>SetSD = @{Namespace="<%= value['namespace'] %>";Path="__systemsecurity=@";Name="SetSecurityDescriptor";ArgumentList=$<%= value['name'] %>.psobject.immediateBaseObject}
+  Invoke-WmiMethod @<%= value['name'] %>SetSD
+<%- end -%>
+}
+catch {
+  Write-Error $_
+
+  exit 1
+}

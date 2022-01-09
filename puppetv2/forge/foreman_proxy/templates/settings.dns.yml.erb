@@ -1,0 +1,7 @@
+---
+<% if @dns -%>
+:enabled: true
+:use_provider: <%= @dns_provider %>
+<% else -%>
+:enabled: false
+<% end -%>

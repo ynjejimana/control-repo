@@ -1,0 +1,77 @@
+﻿[bool] $sidExists = $false
+
+Function Get-AccessMask([string[]]$permissions) {
+    #$WBEM_RIGHT_PUBLISH = 0x80
+
+    $permissionTable = @{
+        "EnableAccount" = 1
+        "ExecuteMethods" = 2
+        "FullWrite" = 4
+        "PartialWrite" = 8
+        "ProviderWrite" = 0x10
+        "RemoteEnable" = 0x20
+        "ReadSecurity" = 0x20000
+        "EditSecurity" = 0x40000
+    }
+    $accessMask = 0
+   
+    # FullWrite Check (must include both PartialWrite and ProviderWrite)
+    if ($permissions -contains "FullWrite") {
+        if (! ($permissions -contains "PartialWrite")) { $permissions +="PartialWrite" }
+        if (! ($permissions -contains "ProviderWrite")) { $permissions +="ProviderWrite" }
+    }
+
+    foreach ($permission in $permissions) {
+        $accessMask += $permissionTable[$permission]
+    }
+    $accessMask
+}
+
+<% @wmiPermissions.each do |name, value| -%>
+
+try {
+
+    $sidExists = $false
+    #[string[]]$wmiPermissions = <%= value['permissions'] %>
+
+        if (('<%= value['account'] %>'.Contains('@')) -or ('<%= value['account'] %>'.Contains('\'))) {
+          $upn = '<%= value['account'] %>'
+        }
+        else {
+          $upn = '<%= hostname %>\<%= value['account'] %>'
+        }
+
+    $oldSD = (Invoke-WmiMethod -Namespace "<%= value['namespace'] %>" -Path "__systemsecurity=@" -Name GetSecurityDescriptor).Descriptor
+    $sid = ((New-Object System.Security.Principal.NTAccount($upn)).Translate([System.Security.Principal.SecurityIdentifier])).Value
+    $ace = (New-Object System.Management.ManagementClass("win32_Ace")).CreateInstance()
+    $ace.AccessMask = Get-AccessMask("<%= value['permissions'] %>".Split(","))
+    $ace.AceType = 0x0
+    $trustee = (New-Object System.Management.ManagementClass("win32_Trustee")).CreateInstance()
+    $trustee.SidString = $sid
+    $ace.Trustee = $trustee
+    $ace.AceFlags = 0x2
+
+    [System.Management.ManagementBaseObject[]]$newDACL = @()
+    foreach ($oace in $oldSD.DACL){
+        if ($oace.Trustee.SIDString -eq $sid) {
+            $sidExists = $true
+            continue
+        } else {
+            $newDACL += $oace.psobject.immediateBaseObject
+        }
+    }
+
+    if ($sidExists) {
+        $oldSD.DACL = $newDACL.psobject.immediateBaseObject
+        Invoke-WmiMethod -Namespace "<%= value['namespace'] %>" -Path "__systemsecurity=@" -Name SetSecurityDescriptor -ArgumentList $oldSD.psobject.immediateBaseObject
+        $oldSD = (Invoke-WmiMethod -Namespace "<%= value['namespace'] %>" -Path "__systemsecurity=@" -Name GetSecurityDescriptor).Descriptor
+    }
+
+    $oldSD.DACL += $ace.psobject.immediateBaseObject
+    Invoke-WmiMethod -Namespace "<%= value['namespace'] %>" -Path "__systemsecurity=@" -Name SetSecurityDescriptor -ArgumentList $oldSD.psobject.immediateBaseObject
+
+} catch {
+    Write-Error "Failed to set permissions for <%= value['namespace'] %> Namespace. Error: $_"
+}
+
+<%- end -%>

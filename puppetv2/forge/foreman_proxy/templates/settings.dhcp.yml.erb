@@ -1,0 +1,7 @@
+---
+<% if @dhcp -%>
+:enabled: true
+:use_provider: <%= @dhcp_provider %>
+<% else -%>
+:enabled: false
+<% end -%>

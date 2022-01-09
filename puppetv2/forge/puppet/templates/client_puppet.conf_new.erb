@@ -1,0 +1,26 @@
+# This file is managed by Puppet!
+# Don't edit this file by hand!
+
+[main]
+vardir = /var/lib/puppet
+logdir = /var/log/puppet
+rundir = /var/run/puppet
+ssldir = $vardir/ssl
+pluginsource = puppet://$server/plugins
+<% if !@dns_alt_names.empty? -%>
+dns_alt_names = <%= @dns_alt_names.join(", ") %>
+<% end -%>
+
+# Allow services in the 'puppet' group to access key (Foreman + proxy)
+privatekeydir = $ssldir/private_keys { group = service }
+hostprivkey = $privatekeydir/$certname.pem { mode = 640 }
+
+[agent]
+environment = <%= @environment %>
+report = true
+pluginsync = true
+ignoreschedules = true
+listen = false
+splay = true
+splaylimit = <%= @splaylimit %>
+server = <%= @puppet_server %>

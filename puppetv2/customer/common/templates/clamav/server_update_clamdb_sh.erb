@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# this script will download the following files: daily.cvd main.cvd bytecode.cvd
+#
+# from: http://db.au.clamav.net
+#
+# and place them in the clamav webroot
+
+logfile="/var/log/clamav_dat_update.log"
+
+echo "CLAMAV DAT UPDATE START: $(date +%Y%m%d%H%M%S)" >> $logfile
+#/usr/bin/wget -nv -O /var/www/html/clamav/daily.cvd http://database.clamav.net/daily.cvd >> $logfile 2>&1
+#/usr/bin/wget -nv -O /var/www/html/clamav/main.cvd http://database.clamav.net/main.cvd >> $logfile 2>&1
+#/usr/bin/wget -nv -O /var/www/html/clamav/bytecode.cvd http://database.clamav.net/bytecode.cvd >> $logfile 2>&1
+/bin/freshclam --no-warnings >> $logfile 2>&1
+echo "CLAMAV DAT UPDATE STOP: $(date +%Y%m%d%H%M%S)" >> $logfile
+
+chown clamupdate: /var/www/html/clamav/*
+chmod 0644 /var/www/html/clamav/*

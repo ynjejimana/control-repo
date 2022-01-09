@@ -1,0 +1,44 @@
+<% if @enable_udp -%>
+# Load UDP module
+$ModLoad imudp
+<% end -%>
+
+<% if @enable_tcp -%>
+# Load TCP module
+$ModLoad imtcp
+<% end -%>
+
+<% if @enable_relp -%>
+<% if (scope.function_versioncmp([@rsyslog_version, '6.3.6']) >= 0) -%>
+# Load RELP module
+$ModLoad imrelp
+<% end -%>
+<% end -%>
+
+<% if @high_precision_timestamps == false -%>
+#
+# Use traditional timestamp format.
+#
+$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
+<% else -%>
+#
+# Use high precision timestamp format.
+#
+$ActionFileDefaultTemplate RSYSLOG_FileFormat
+<% end -%>
+
+<% if @ssl -%>
+# Server side SSL.
+$DefaultNetstreamDriver gtls
+
+# Cert files.
+$DefaultNetstreamDriverCAFile <%= @ssl_ca %>
+$DefaultNetstreamDriverCertFile <%= @ssl_cert %>
+$DefaultNetstreamDriverKeyFile <%= @ssl_key %>
+
+$InputTCPServerStreamDriverMode 1
+$InputTCPServerStreamDriverAuthMode anon
+<% end -%>
+
+# Switch to remote ruleset
+$RuleSet remote

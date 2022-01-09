@@ -1,0 +1,42 @@
+$dc="<%= @dc %>"
+$password = ConvertTo-Securestring "<%= @password %>" -asplaintext -force
+$username = "<%= @username %>"
+$replicationsource = "<%= @replicationsource %>"
+$sitename = "<%= @sitename %>"
+$domainname = "<%= @domainname %>"
+
+Import-Module ActiveDirectory
+
+###############################################################################
+
+# DCPROMO UP: Create a new DC on a member server in the domain
+
+###############################################################################
+
+
+# Prompt for credentials to reuse throughout the script
+
+$cred = new-object -typename system.management.automation.pscredential -argumentlist $username, $password
+
+# Install the role for AD-Domain-Services
+
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+
+    Import-Module ADDSDeployment;
+
+    Install-ADDSDomainController `
+        -NoGlobalCatalog:$false `
+        -CreateDnsDelegation:$false `
+        -CriticalReplicationOnly:$false `
+        -DatabasePath "C:\Windows\NTDS" `
+        -DomainName $domainname `
+        -InstallDns:$true `
+        -LogPath "C:\Windows\NTDS" `
+        -NoRebootOnCompletion:$true `
+        -ReplicationSourceDC $replicationsource `
+        -SiteName $sitename `
+        -SysvolPath "C:\Windows\SYSVOL" `
+        -Force:$true `
+        -Credential $cred `
+        -Confirm:$false `
+        -SafeModeAdministratorPassword $password

@@ -1,0 +1,76 @@
+# file is managed by puppet
+<% if @preserve_fqdn -%>
+$PreserveFQDN on
+<% end -%>
+#################
+#### MODULES ####
+#################
+
+<% if @enable_pstats -%>
+$ModLoad impstats
+<% end -%>
+<% @modules.each do |module_row| -%>
+<%= module_row %>
+<% end -%>
+
+<% if @non_kernel_facility -%>
+# Enable non-kernel facility klog messages
+$KLogPermitNonKernelFacility on
+
+<% end -%>
+###########################
+#### GLOBAL DIRECTIVES ####
+###########################
+#
+# Set max message size for sending and receiving
+#
+$MaxMessageSize <%= @max_message_size %>
+
+<% if @enable_pstats -%>
+$PStatInterval <%= @pstat_interval %>
+$PStatFacility <%= @pstat_facility %>
+$PStatSeverity <%= @pstat_severity %>
+
+<% end -%>
+<% if @default_template -%>
+#
+# Use traditional timestamp format.
+# To enable high precision timestamps, comment out the following line.
+#
+$ActionFileDefaultTemplate <%= @default_template %>
+
+<% end -%>
+<% if @msg_reduction -%>
+# Filter duplicated messages
+$RepeatedMsgReduction on
+
+<% end -%>
+#
+# Set the default permissions for all log files.
+#
+$FileOwner <%= @log_user %>
+$FileGroup <%= @log_group %>
+$FileCreateMode <%= @perm_file %>
+$DirOwner <%= @log_user %>
+$DirGroup <%= @log_group %>
+$DirCreateMode <%= @perm_dir %>
+$PrivDropToUser <%= @run_user %>
+$PrivDropToGroup <%= @run_group %>
+$WorkDirectory <%= @spool_dir %>
+<% if @umask -%>
+$Umask <%= @umask %>
+<% end -%>
+
+#
+# Include all config files in <%= @rsyslog_d %>
+#
+$IncludeConfig <%= @rsyslog_d -%>*.conf
+
+#
+# Emergencies are sent to everybody logged in.
+#
+<% if @rsyslog_version and @rsyslog_version.split('.')[0].to_i >= 7 -%>
+*.emerg	:omusrmsg:*
+<% else -%>
+*.emerg	*
+<% end -%>
