@@ -1,4 +1,0 @@
-- name: Check kernel version is installed
-  command: "/bin/rpm -q kernel-uek-3.8.13-118.2.2.el6uek.x86_64"
-  register: result
-  tags: check_kernel

@@ -1,7 +1,0 @@
----
-- name: List Mounts
-  shell: mount
-  tags: list_mounts
-- name: Mount NFS
-  shell: mount -a
-  tags: enable_mounts

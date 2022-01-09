@@ -1,5 +1,0 @@
-- name: List repos
-  shell:  "ls /etc/yum.repos.d/"
-  register: result
-  tags: list_yum_repos
-- debug: var=result.stdout_lines

@@ -1,8 +1,0 @@
----
-
-- name: Restart SSSD
-  service:
-       name: sssd
-       state: restarted
-       enabled: yes
-  tags: restart_sssd

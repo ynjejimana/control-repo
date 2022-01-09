@@ -1,7 +1,0 @@
----
-
-- import_playbook: pre_patch_checks.yml
-
-- import_playbook: patching.yml
-
-- import_playbook: reboot.yml

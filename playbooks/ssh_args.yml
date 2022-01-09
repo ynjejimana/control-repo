@@ -1,1 +1,0 @@
-#ansible_ssh_common_args: '-o ProxyCommand="ssh -i ~/.ssh/config -W %h:%p -q njejimyv@socksproxy.s3.chp.cba"'

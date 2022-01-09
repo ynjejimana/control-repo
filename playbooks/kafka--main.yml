@@ -1,9 +1,0 @@
----
-kafka_user: kafka
-kafka_group: kafka
-kafka_root_dir: /opt
-kafka_conf_dir: /etc/kafka
-kafka_ssl_dir: /etc/kafka/ssl
-kafka_log_dir: /var/log/kafka
-kafka_data_dir: /var/kafka
-kafka_ssl_password: hYueeeeiwnHC7wFB8jdidekn93ndKnfskjf3

@@ -1,7 +1,0 @@
-- name: Reboot server
-  command: /sbin/reboot
-  tags: reboot
-- name: Reboot if server is up longer than a day
-  command: /sbin/reboot
-  when: facter_uptime_hours|int >= 24
-  tags: reboot_uptime_gt_24hrs
