@@ -1,9 +1,0 @@
-Gemfile.lock
-*.idea
-*.swp
-*.tmp
-tmp/
-pkg/
-spec/fixtures/manifests
-.rspec_system/
-.vagrant/

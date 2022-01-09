@@ -1,2 +1,0 @@
-zabbix ALL=NOPASSWD: /sbin/service
-

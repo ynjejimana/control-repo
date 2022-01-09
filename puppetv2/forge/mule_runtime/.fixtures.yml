@@ -1,5 +1,0 @@
-fixtures:
-  symlinks:
-    mule_runtime: "#{source_dir}"
-    archive: "#{source_dir}/../archive"
-    stdlib: "#{source_dir}/../stdlib"

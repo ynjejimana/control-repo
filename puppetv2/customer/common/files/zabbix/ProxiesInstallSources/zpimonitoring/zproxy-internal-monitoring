@@ -1,4 +1,0 @@
-#* * * * * zabbix zabbix_sender -z localhost -s <proxy DNS name> -k zpimtrappercheck1 -o 1
-* * * * * zabbix /srv/zabbix/scripts/zpimonitoring/diag-n-maintain.pl maintain 1 1
-
-

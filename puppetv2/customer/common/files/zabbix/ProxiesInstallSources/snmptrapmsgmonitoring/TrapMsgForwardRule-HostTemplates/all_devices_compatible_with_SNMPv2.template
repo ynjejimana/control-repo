@@ -1,3 +1,0 @@
-# NOTE: comment lines must start with # as the very first character
-# coldStart
-INSERT INTO TA_FORWARD_RULES_MESSAGES (DS_MSG_OID,DL_HOST_ID,DL_QUEUE_ID,DS_RULE_ORIGIN) SELECT '.1.3.6.1.6.3.1.1.5.1',:hostid,B.DL_ID,:ruleorigin FROM TA_FORWARD_RULES_QUEUES B WHERE B.DS_QUEUE_NAME='SNMPTrap-Queue3' LIMIT 1;

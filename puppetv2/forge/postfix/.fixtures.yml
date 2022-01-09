@@ -1,6 +1,0 @@
-fixtures:
-  repositories:
-    "augeas": "https://github.com/camptocamp/puppet-augeas.git"
-    "stdlib": "https://github.com/puppetlabs/puppetlabs-stdlib.git"
-  symlinks:
-    "postfix": "#{source_dir}"

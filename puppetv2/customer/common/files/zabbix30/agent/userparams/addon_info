@@ -1,3 +1,0 @@
-UserParameter=userparam.addon.list,(test -d /etc/zabbix/zabbix_agentd.addon.d && (cd /etc/zabbix/zabbix_agentd.addon.d; ls *.conf 2>/dev/null | awk -F. '{print $1}') | sort -u | awk -vORS=, '{ print $1 }' | sed -e 's/,$/\n/') || echo -n ''
-UserParameter=userparam.addon.discovery,(test -d /etc/zabbix/zabbix_agentd.addon.d && (cd /etc/zabbix/zabbix_agentd.addon.d; TAGS=`ls *.conf 2>/dev/null | awk -F. '{print $1}'`; echo -n '{"data":['; JSONTAGS=$(for i in $TAGS; do echo -n "{\"{#TAG}\":\"${i}\"},"; done | sed 's/,$//'); echo -n $JSONTAGS ; echo -n ']}')) || echo -n '{"data":[]"'
-

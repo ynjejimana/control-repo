@@ -1,4 +1,0 @@
-### NTP Monitoring
-UserParameter=npmg-sync-status[*],ntpstat >/dev/null 2>&1;echo $?
-### Mountpoints Monitoring
-UserParameter=mtsm-mountpoint-status[*],mountpoint -q $1;echo $?

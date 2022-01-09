@@ -1,5 +1,0 @@
-.rspec
-.*.sw[op]
-.bundle/
-Gemfile.lock
-Gemfile.local

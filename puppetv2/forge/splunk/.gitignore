@@ -1,8 +1,0 @@
-.*.sw?
-.bundle
-.pkg
-.ruby-version
-.vagrant
-Gemfile.lock
-modules/
-spec/fixtures

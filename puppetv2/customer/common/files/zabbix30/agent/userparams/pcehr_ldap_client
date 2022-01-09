@@ -1,1 +1,0 @@
-UserParameter=ldap_query1_result[*],LDAPTLS_REQCERT=never ldapsearch -H ldaps://$1 -x -b "cn="$2",ou=service accounts,ou=ntt,dc="$4",dc=elab,dc=gov,dc=au" -D svc_admonitoring -w '$3'&>/dev/null|echo $?
