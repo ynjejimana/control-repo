@@ -1,4 +1,4 @@
-node puppet.local {
+node puppet.lab.com {
   include role::master
 }
 
