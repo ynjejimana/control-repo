@@ -15,9 +15,3 @@ node 'agent2.lab.com' {
   }
 }
 
-node 'agent3.lab.com' {
-  package { 'vim' :
-    ensure => present,
-  }
-}
-
