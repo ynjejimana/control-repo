@@ -1,15 +1,15 @@
-node puppet.lab.com {
+node master.lab.com {
   include role::master
 }
 
-node 'agent1.lab.com' {
+node 'agent.lab.com' {
   package { 'vim' :
     ensure => present,
   }
 }
 
 
-node 'agent2.lab.com' {
+node 'client.lab.com' {
   package { 'vim' :
     ensure => present,
   }
