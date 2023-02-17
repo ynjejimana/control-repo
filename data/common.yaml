@@ -1,0 +1,33 @@
+syslog_server: '192.168.100.10'
+monitor_ips:
+  - '192.168.100.15'
+  - '192.168.100.20'
+
+cobbler_config:
+  manage_dhcp: true
+  pxe_just_once: true
+
+ips:
+  agent01: '192.168.100.15'
+  agent02: '192.168.100.20'
+
+firewall_allow_list:
+  - "%{lookup('ips.agent01')}"
+  - "%{lookup('ips.agent02')}"
+
+users:
+  'katy':
+    ensure: present
+    uid: 1900
+    shell: '/bin/bash'
+  'lark':
+    ensure: present
+    uid: 1901
+    shell: '/bin/bash'
+  'bridget':
+    ensure: present
+    uid: 1902
+  'charles':
+    ensure: present
+    uid: 1903
+    shell: '/bin/bash'
