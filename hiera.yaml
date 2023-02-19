@@ -7,10 +7,10 @@ defaults:
 
 hierarchy:
   - name: "Host-specific data"
-    path: "nodes/%{facts.hostname}.yaml"
-  - name: "OS release-specific data"
-    path: "os/%{facts.os.release.major}.yaml"
-  - name: "OS distro-specific data"
-    path: "os/%{facts.os.distro.codename}.yaml"
+    path: "nodes/%{trusted.certname}.yaml"
+
+  - name: "Per-OS defaults"
+    path: "os/%{facts.os.family}.yaml"
+
   - name: "Common defaults"
     path: "common.yaml"
