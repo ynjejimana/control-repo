@@ -1,28 +1,28 @@
 ---
 # IPv6 disabled by default
-common::ipv6::status::isEnabled: false
+#common::ipv6::status::isEnabled: false
 
 # IPTables disabled by default
-common::iptables::status::isEnabled: false
+#common::iptables::status::isEnabled: false
 
 # Puppet configuration
-common::puppet::client::puppet_server: "master.lab.com"
-common::puppet::client::version: "5.5.22"
-common::puppet::puppetmaster::version: "5.5.22"
+#common::puppet::client::puppet_server: "master.lab.com"
+#common::puppet::client::version: "5.5.22"
+#common::puppet::puppetmaster::version: "5.5.22"
 # New puppet client class :D
 #common::puppet::client_new::version: {}
 
 # By default, don't touch the hosts file
-common::hosts::default::hosts: {}
+#common::hosts::default::hosts: {}
 
 # By default, turn the autoupdate functionality off
-common::puppet::cron::autoupdate_cron: false
-common::puppet::cron::noop_cron: true
-common::puppet::client::update_puppet_cron: false
+#common::puppet::cron::autoupdate_cron: false
+#common::puppet::cron::noop_cron: true
+#common::puppet::client::update_puppet_cron: false
 
 # LEAVE THIS VARIABLE BLANK. The classes variable is used to apply classes to a host.
 # If this variable is set here every puppet client globally would have the value applied.
-classes: ""
+#classes: ""
 
 # System users
 common::users::dev_group::group_name: "labdevs"
@@ -99,8 +99,8 @@ common::motd::default::message: |
  |------------------------------------------------------------------------------|
 
 # Packages to be installed on all Linux SOE VMs
-soe::linux::packages:
- - libselinux-python
+#soe::linux::packages:
+# - libselinux-python
 
 # By default, root password is managed by puppet
 common::users::root_account::manage_password: true
