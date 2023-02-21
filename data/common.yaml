@@ -1,36 +1,83 @@
-syslog_server: '192.168.100.10'
-monitor_ips:
-  - '192.168.100.15'
-  - '192.168.100.20'
+---
+# IPv6 disabled by default
+common::ipv6::status::isEnabled: false
 
-cobbler_config:
-  manage_dhcp: true
-  pxe_just_once: true
+# IPTables disabled by default
+common::iptables::status::isEnabled: false
 
-ips:
-  agent01: '192.168.100.15'
-  agent02: '192.168.100.20'
+# Puppet configuration
+common::puppet::client::puppet_server: "master.lab.com"
+common::puppet::client::version: "5.5.22"
+common::puppet::puppetmaster::version: "5.5.22"
+# New puppet client class :D
+#common::puppet::client_new::version: {}
 
-firewall_allow_list:
-  - "%{lookup('ips.agent01')}"
-  - "%{lookup('ips.agent02')}"
+# By default, don't touch the hosts file
+common::hosts::default::hosts: {}
 
-users:
-  'katy':
-    ensure: present
-    uid: 1900
-    shell: '/bin/bash'
-  'lark':
-    ensure: present
-    uid: 1901
-    shell: '/bin/bash'
-  'bridget':
-    ensure: present
-    uid: 1902
-  'charles':
-    ensure: present
-    uid: 1903
-    shell: '/bin/bash'
+# By default, turn the autoupdate functionality off
+common::puppet::cron::autoupdate_cron: false
+common::puppet::cron::noop_cron: true
+common::puppet::client::update_puppet_cron: false
+
+# LEAVE THIS VARIABLE BLANK. The classes variable is used to apply classes to a host.
+# If this variable is set here every puppet client globally would have the value applied.
+classes: ""
+
+# System users
+common::users::dev_group::group_name: "labdevs"
+common::users::net_group::group_name: "labnets"
+common::users::uni_group::group_name: "labunix"
+common::users::recovery_account::password: "98efdd090e868e55c76761aaec6cea54"
+common::users::root_account::password: "98efdd090e868e55c76761aaec6cea54"
+common::users::admin_group::group_name: "labadmins"
+
+# Current UNIX team users
+common::users::unix_accounts::current_users:
+ uuser1:
+  fullname: Unix User1
+  uid: 5001
+  email: unix.user1@lab.com
+  rsa_ssh_key:
+ uuser2:
+  fullname: Unix User2
+  uid: 5002
+  email: unix.user2@lab.com
+  rsa_ssh_key: ""
+
+common::users::unix_accounts::former_users:
+
+common::users::developers_accounts::former_users:
+
+common::users::developers_accounts::current_users:
+ duser1:
+  fullname: Dev User1
+  email: dev.user1@lab.com
+  uid: 7001
+  rsa_ssh_key: {}
+
+ duser2:
+  fullname: Dev User2
+  email: dev.user2@lab.com
+  uid: 7002
+  rsa_ssh_key: {}
+ 
+common::users::networking_accounts::current_users:
+ nuser1:
+  fullname: Net User1
+  email: net.user1@lab.com
+  uid: 7003
+  rsa_ssh_key: {}
+
+ nuser2:
+  fullname: Net User2
+  email: net.user2@lab.com
+  uid: 7004
+  rsa_ssh_key: {}
+
+common::users::networking_accounts::former_users:
+
+common::resolv::resolvconf::search_domains: ["lab.com"]
 
 common::motd::default::message: |
  |------------------------------------------------------------------------------|
@@ -51,4 +98,13 @@ common::motd::default::message: |
  | law enforcement officials.                                                   |
  |------------------------------------------------------------------------------|
 
+# Packages to be installed on all Linux SOE VMs
+soe::linux::packages:
+ - libselinux-python
+
+# By default, root password is managed by puppet
+common::users::root_account::manage_password: true
+
+# By default, root password is not expired (-1)
+common::users::root_account::password_max_age: "-1"
 
