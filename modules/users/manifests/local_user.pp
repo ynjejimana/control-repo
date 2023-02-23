@@ -1,4 +1,4 @@
-define common::users::local_user ($username = $title, $group, $fullname, $email, $ensure, $rsa_ssh_key = undef, $dss_ssh_key = undef, $uid = undef, $managehome = true ) {
+define users::local_user ($username = $title, $group, $fullname, $email, $ensure, $rsa_ssh_key = undef, $dss_ssh_key = undef, $uid = undef, $managehome = true ) {
 
 	# Sets ensure variable for .ssh directory creation/deletion
 	$ensure_directory = $ensure ? {
