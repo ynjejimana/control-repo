@@ -1,4 +1,4 @@
-class nodes {
+class nodes:: {
 
 include common::motd::default
 include common::users::dev_group::group_name
@@ -18,7 +18,6 @@ include common::users::networking_accounts::former_users
 }
 
 #node 'agent01.lab.com' {
-
 #        include apache
 #	include motd
 #        include issue
@@ -30,7 +29,6 @@ include common::users::networking_accounts::former_users
 #}
 
 #node 'agent02.lab.com' {
-
 #        include apache
 #	include motd
 #        include issue
@@ -41,7 +39,6 @@ include common::users::networking_accounts::former_users
 #}
 
 #node 'agent03.lab.com' {
-
 #        include apache
 #	include motd
 #        include issue
