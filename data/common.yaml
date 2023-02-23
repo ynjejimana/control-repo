@@ -35,4 +35,4 @@ common::motd::default::message: |
  | law enforcement officials.                                                   |
  |------------------------------------------------------------------------------|
 
-
+profile::baseline::svcname: 'sshd'
