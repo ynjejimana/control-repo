@@ -38,12 +38,12 @@ common::users::unix_accounts::current_users:
   fullname: Unix User1
   uid: 5001
   email: unix.user1@lab.com
-  rsa_ssh_key:
+    #  rsa_ssh_key:
  uuser2:
   fullname: Unix User2
   uid: 5002
   email: unix.user2@lab.com
-  rsa_ssh_key: ""
+    #  rsa_ssh_key: ""
 
 common::users::unix_accounts::former_users:
 
@@ -54,26 +54,26 @@ common::users::developers_accounts::current_users:
   fullname: Dev User1
   email: dev.user1@lab.com
   uid: 7001
-  rsa_ssh_key: {}
+    #  rsa_ssh_key: {}
 
  duser2:
   fullname: Dev User2
   email: dev.user2@lab.com
   uid: 7002
-  rsa_ssh_key: {}
+    #  rsa_ssh_key: {}
  
 common::users::networking_accounts::current_users:
  nuser1:
   fullname: Net User1
   email: net.user1@lab.com
   uid: 7003
-  rsa_ssh_key: {}
+#  rsa_ssh_key: {}
 
  nuser2:
   fullname: Net User2
   email: net.user2@lab.com
   uid: 7004
-  rsa_ssh_key: {}
+#  rsa_ssh_key: {}
 
 common::users::networking_accounts::former_users:
 
@@ -81,7 +81,7 @@ common::resolv::resolvconf::search_domains: ["lab.com"]
 
 common::motd::default::message: |
  |------------------------------------------------------------------------------|
- | This system is managed by NTT Communications ICT Solutions (+61 2 9563 2700).|
+ |                  This system is managed by LauUkuzim.                        |
  |                                                                              |
  | This system is for the use of authorized users only. Individuals using this  |
  | computer system without authority, or in excess of their authority, are      |
@@ -101,10 +101,14 @@ common::motd::default::message: |
 # Packages to be installed on all Linux SOE VMs
 #soe::linux::packages:
 # - libselinux-python
+# - vim
+# - wget
+# - curl
+# - git  
 
 # By default, root password is managed by puppet
-common::users::root_account::manage_password: true
+#common::users::root_account::manage_password: true
 
 # By default, root password is not expired (-1)
-common::users::root_account::password_max_age: "-1"
+#common::users::root_account::password_max_age: "-1"
 
