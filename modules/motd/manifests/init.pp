@@ -3,7 +3,7 @@ class motd {
       ensure => file,
       content => "\n
  |------------------------------------------------------------------------------|
- | This system is managed by NTT Communications ICT Solutions (+61 2 9563 2700).|
+ | 			This system is managed by Yves.				|
  |                                                                              |
  | This system is for the use of authorized users only. Individuals using this  |
  | computer system without authority, or in excess of their authority, are      |
