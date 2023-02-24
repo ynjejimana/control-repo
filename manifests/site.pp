@@ -1,7 +1,7 @@
 node 'agent01.lab.com' {
 
    include users
-   include packages
+   include package
    include motd
 
 }
@@ -9,7 +9,7 @@ node 'agent01.lab.com' {
 node 'agent02.lab.com' {
 
    include users
-   include packages
+   include package
    include motd
 
 }
@@ -17,7 +17,7 @@ node 'agent02.lab.com' {
 node 'agent03.lab.com' {
 
    include users
-   include packages
+   include package
    include motd
 
 }
