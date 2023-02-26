@@ -1,3 +1,10 @@
+class motd {
+
+  include motd::default:message
+
+}
+
+
 node 'agent01.lab.com' {
 
    include users

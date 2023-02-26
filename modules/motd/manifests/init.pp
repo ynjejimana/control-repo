@@ -1,5 +1,5 @@
 class motd {
 
-  include motd::default:message
+  include motd::default
 
 }
