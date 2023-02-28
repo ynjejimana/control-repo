@@ -1,4 +1,2 @@
-node default {
-}
-
-hiera('classes')
+hiera('classes'
+)
