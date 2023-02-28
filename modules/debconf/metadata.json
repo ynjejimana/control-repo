@@ -1,0 +1,43 @@
+{
+  "name": "stm-debconf",
+  "version": "4.1.0",
+  "author": "stm",
+  "summary": "Manage debconf database items on Debian based systems.",
+  "license": "BSD-2-Clause",
+  "source": "https://github.com/smoeding/puppet-debconf",
+  "project_page": "https://github.com/smoeding/puppet-debconf",
+  "issues_url": "https://github.com/smoeding/puppet-debconf/issues",
+  "dependencies": [
+
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "9",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "16.04",
+        "18.04",
+        "20.04"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 5.0.0 < 8.0.0"
+    }
+  ],
+  "tags": [
+    "debconf"
+  ],
+  "pdk-version": "2.1.1",
+  "template-url": "pdk-default#2.1.1",
+  "template-ref": "tags/2.1.1-0-g03daa92"
+}
