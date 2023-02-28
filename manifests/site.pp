@@ -1,5 +1,4 @@
-nodes 'agent01.lab.com' {
-
+nodes agent01.lab.com {
 }
 
 hiera_include('classes')
