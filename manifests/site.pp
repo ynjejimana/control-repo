@@ -1,12 +1,4 @@
-class motd {
-
-  include motd::default::message
-
+node default {
 }
 
-class users {
-  
-  include users::developers_accounts::current_users
-  include users::dev_group::group_name
-
-}
+hiera_include('classes')
