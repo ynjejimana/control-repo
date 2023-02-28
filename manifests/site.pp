@@ -1,1 +1,2 @@
-hiera_include('classes')
+
+hiera('classes')
