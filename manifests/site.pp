@@ -1,10 +1,10 @@
-node 'agent01.lab.com' {
+nodes 'agent01.lab.com' {
 
 }
 
-hiera_include ('classes')
+hiera_include('classes')
 
-node default {
+nodes default {
 }
 
 

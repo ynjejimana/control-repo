@@ -1,3 +1,5 @@
+---
+
 #users::dev_group::group_name: "labdevs"
 
 #users::developers_accounts::current_users:
@@ -35,5 +37,5 @@
 
 
 classes:
-  - common_hosts
-  - common_packages
+  #  - common_hosts
+  #  - common_packages
