@@ -1,7 +1,0 @@
----
-
-classes:
-  - ntp
-  - timezone
-
-timezone::timezone: 'Australia/Sydney'
